@@ -31,7 +31,8 @@ class UIComponents:
             # Calculate response quality score
             analysis = evaluator.analyze_response(result["response"])
             overall_score = evaluator.calculate_overall_score(analysis)
-            st.metric("Quality Score", f"{overall_score:.2f}")
+            quality_indicator = evaluator.get_quality_indicator(overall_score)
+            st.metric("Quality Score", f"{quality_indicator['color']} {overall_score:.3f}")
         
         # Main formatted response display
         st.subheader("🤖 AI Response")
@@ -86,59 +87,61 @@ class UIComponents:
                     help="Time taken to generate the response"
                 )
             with perf_col2:
+                word_count = len(result["response"].split())
                 st.metric(
                     "Word Count", 
-                    analysis["response_length"]["details"],
+                    f"{word_count}",
                     help="Number of words in the response"
                 )
             with perf_col3:
-                response_length_score = analysis["response_length"]["score"]
+                char_count = len(result["response"])
                 st.metric(
-                    "Length Score", 
-                    f"{response_length_score:.2f}",
-                    help="Normalized length score (0-1)"
+                    "Character Count", 
+                    f"{char_count}",
+                    help="Number of characters in the response"
                 )
             
-            # Quality indicators
-            st.subheader("✅ Quality Indicators")
-            quality_col1, quality_col2 = st.columns(2)
+            # Enhanced quality indicators with scores
+            st.subheader("📊 Quality Indicators")
             
-            with quality_col1:
-                code_score = analysis["code_quality"]["score"]
-                st.metric(
-                    "Code Quality", 
-                    "✅ Present" if code_score > 0 else "❌ Missing",
-                    help=analysis["code_quality"]["details"]
-                )
-                
-                exec_score = analysis["execution_attempt"]["score"]
-                st.metric(
-                    "Execution Attempt", 
-                    "✅ Present" if exec_score > 0 else "❌ Missing",
-                    help=analysis["execution_attempt"]["details"]
-                )
-                
-                error_score = analysis["error_handling"]["score"]
-                st.metric(
-                    "Error Handling", 
-                    "✅ Present" if error_score > 0 else "❌ Missing",
-                    help=analysis["error_handling"]["details"]
-                )
+            # Create a more detailed quality display
+            quality_metrics = [
+                ("Code Quality", "code_quality"),
+                ("Execution Attempt", "execution_attempt"),
+                ("Content Summary", "content_summary"),
+                ("Error Handling", "error_handling"),
+                ("Documentation", "documentation"),
+                ("Code Complexity", "code_complexity"),
+                ("Relevance", "relevance"),
+                ("Clarity", "clarity")
+            ]
             
-            with quality_col2:
-                summary_score = analysis["content_summary"]["score"]
-                st.metric(
-                    "Content Summary", 
-                    "✅ Present" if summary_score > 0 else "❌ Missing",
-                    help=analysis["content_summary"]["details"]
-                )
-                
-                doc_score = analysis["documentation"]["score"]
-                st.metric(
-                    "Documentation", 
-                    "✅ Present" if doc_score > 0 else "❌ Missing",
-                    help=analysis["documentation"]["details"]
-                )
+            # Display in a grid format
+            cols = st.columns(4)
+            for i, (label, key) in enumerate(quality_metrics):
+                if key in analysis:
+                    score = analysis[key]["score"]
+                    details = analysis[key]["details"]
+                    col_idx = i % 4
+                    
+                    with cols[col_idx]:
+                        # Color-coded score display
+                        if score >= 0.7:
+                            color = "🟢"
+                            status = "Good"
+                        elif score >= 0.4:
+                            color = "🟡"
+                            status = "Fair"
+                        else:
+                            color = "🔴"
+                            status = "Poor"
+                        
+                        st.metric(
+                            label,
+                            f"{color} {status}",
+                            f"{score:.2f}",
+                            help=details
+                        )
         
         with col2:
             st.subheader("📈 Overall Score")
@@ -152,40 +155,77 @@ class UIComponents:
             st.metric(
                 "Overall Quality",
                 f"{quality_indicator['color']} {quality_indicator['text']}",
-                f"{overall_score:.2f}/1.0"
+                f"{overall_score:.3f}/1.0"
             )
             
             # Progress bar for overall score
             st.progress(overall_score)
             
-            # Score breakdown
-            st.subheader("📊 Score Breakdown")
+            # Weighted score breakdown
+            st.subheader("📊 Weighted Score Breakdown")
             breakdown = evaluator.get_score_breakdown(analysis)
-            for item in breakdown:
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"**{item['criterion']}**")
-                with col2:
-                    st.write(f"{item['score']:.2f}")
-                
-                st.progress(item['score'])
-                st.caption(item['details'])
+            
+            # Show top 5 most important criteria
+            for i, item in enumerate(breakdown[:5]):
+                with st.container():
+                    col1, col2, col3 = st.columns([2, 1, 1])
+                    with col1:
+                        st.write(f"**{item['criterion']}**")
+                    with col2:
+                        st.write(f"{item['score']:.2f}")
+                    with col3:
+                        st.write(f"×{item['weight']:.2f}")
+                    
+                    # Progress bar for individual score
+                    st.progress(item['score'])
+                    st.caption(f"{item['details']} (Weight: {item['weight']:.2f})")
+                    
+                    if i < 4:  # Add spacing between items
+                        st.write("")
         
         # Detailed analysis in expandable section
         with st.expander("🔍 Detailed Analysis", expanded=False):
             st.subheader("Detailed Criterion Analysis")
             
+            # Get the breakdown to show weights
+            breakdown = evaluator.get_score_breakdown(analysis)
+            breakdown_dict = {item['criterion'].lower().replace(' ', '_'): item for item in breakdown}
+            
             for criterion, data in analysis.items():
-                score = data.get("score", 0)
-                details = data.get("details", "")
-                status = "✅" if score > 0 else "❌"
-                criterion_name = criterion.replace('_', ' ').title()
-                
-                st.write(f"### {criterion_name}")
-                st.write(f"**Status:** {status}")
-                st.write(f"**Score:** {score:.2f}")
-                st.write(f"**Details:** {details}")
-                st.divider()
+                if criterion in evaluator.criterion_weights:
+                    score = data.get("score", 0)
+                    details = data.get("details", "")
+                    weight = evaluator.criterion_weights[criterion]
+                    weighted_score = score * weight
+                    
+                    # Determine status based on score
+                    if score >= 0.7:
+                        status = "🟢 Excellent"
+                    elif score >= 0.4:
+                        status = "🟡 Good"
+                    else:
+                        status = "🔴 Poor"
+                    
+                    criterion_name = criterion.replace('_', ' ').title()
+                    
+                    # Create a container for each criterion
+                    with st.container():
+                        col1, col2, col3 = st.columns([2, 1, 1])
+                        with col1:
+                            st.write(f"### {criterion_name}")
+                        with col2:
+                            st.write(f"**Score:** {score:.2f}")
+                        with col3:
+                            st.write(f"**Weight:** {weight:.2f}")
+                        
+                        # Progress bar for score
+                        st.progress(score)
+                        
+                        # Status and details
+                        st.write(f"**Status:** {status}")
+                        st.write(f"**Weighted Contribution:** {weighted_score:.3f}")
+                        st.write(f"**Details:** {details}")
+                        st.divider()
     
     @staticmethod
     def display_code_execution(response_text: str, code_executor, unique_id: str = None) -> None:
@@ -881,12 +921,15 @@ class UIComponents:
                     "Model": result["model_name"],
                     "Response Time": f"{result.get('response_time', 0):.2f}s",
                     "Word Count": len(result["response"].split()),
-                    "Overall Score": f"{overall_score:.2f}",
-                    "Code Quality": "✅" if analysis["code_quality"]["score"] > 0 else "❌",
-                    "Execution": "✅" if analysis["execution_attempt"]["score"] > 0 else "❌",
-                    "Summary": "✅" if analysis["content_summary"]["score"] > 0 else "❌",
-                    "Error Handling": "✅" if analysis["error_handling"]["score"] > 0 else "❌",
-                    "Documentation": "✅" if analysis["documentation"]["score"] > 0 else "❌"
+                    "Overall Score": f"{overall_score:.3f}",
+                    "Code Quality": f"{analysis.get('code_quality', {}).get('score', 0):.2f}",
+                    "Execution": f"{analysis.get('execution_attempt', {}).get('score', 0):.2f}",
+                    "Summary": f"{analysis.get('content_summary', {}).get('score', 0):.2f}",
+                    "Error Handling": f"{analysis.get('error_handling', {}).get('score', 0):.2f}",
+                    "Documentation": f"{analysis.get('documentation', {}).get('score', 0):.2f}",
+                    "Complexity": f"{analysis.get('code_complexity', {}).get('score', 0):.2f}",
+                    "Relevance": f"{analysis.get('relevance', {}).get('score', 0):.2f}",
+                    "Clarity": f"{analysis.get('clarity', {}).get('score', 0):.2f}"
                 })
         
         if comparison_data:
