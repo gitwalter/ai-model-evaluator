@@ -208,6 +208,36 @@ class DefaultPrompts:
     def get_default_system_prompts() -> Dict[str, Dict[str, str]]:
         """Get default system prompts for development tasks."""
         return {
+            "Code Producer (Default)": {
+                "content": """You are a code producer focused on delivering working solutions quickly. 
+Provide clean, functional code with minimal explanation but good documentation.
+
+REQUIREMENTS:
+- Write complete, runnable code that works immediately
+- Include necessary imports and dependencies
+- Add docstrings and key comments
+- Handle errors appropriately
+- Follow PEP 8 style guidelines
+- Provide brief usage examples
+
+FOCUS:
+- Production-ready code that works
+- Clean, readable implementation
+- Essential documentation only
+- Quick, effective solutions
+- Minimal but clear explanations
+
+DELIVER:
+- Complete, executable code
+- Brief summary of what the code does
+- Key usage instructions
+- Any important notes or limitations
+
+Keep responses concise and code-focused.""",
+                "category": "Development",
+                "description": "Fast code production with minimal explanation but good documentation"
+            },
+            
             "Python Development Expert": {
                 "content": """You are a Python development expert. Provide practical, production-ready solutions 
 for Python applications. Focus on modern Python best practices, clean code, and real-world implementation.
@@ -481,198 +511,166 @@ Remember: Your primary goal is to deliver working, complete code that users can 
     def get_default_test_prompts() -> Dict[str, Dict[str, str]]:
         """Get default test prompt examples for AI model evaluation."""
         return {
-            # LangChain Library Examples
-            "LangChain Agent with Tools": {
-                "content": "Create a LangChain agent that uses multiple tools with the free Gemini API:\n1. Use DuckDuckGo search tool for web queries\n2. Implement a calculator tool for mathematical operations\n3. Add a weather API tool for location-based data\n4. Include conversation memory with ConversationBufferMemory\n5. Handle tool selection and execution errors\n6. Provide structured output with tool usage history\n\nUse the free Gemini API (gemini-1.5-flash-latest) as the LLM. Include complete agent configuration, tool definitions, and example interactions that can be run directly in the AI Model Evaluator app.",
-                "category": "LangChain",
-                "description": "LangChain agent with multiple tools and memory using Gemini API",
-                "tags": "langchain,agent,tools,memory,duckduckgo,calculator,gemini"
+            # Python Standard Library Examples - File Operations
+            "File System Operations": {
+                "content": "Create a comprehensive file system utility using Python standard library:\n1. List files and directories with os.listdir() and os.walk()\n2. Create, copy, move, and delete files with shutil\n3. Read and write text files with different encodings\n4. Work with CSV files using the csv module\n5. Handle JSON data with the json module\n6. Implement file searching and filtering\n7. Add file metadata extraction (size, modification time)\n8. Create a simple file backup system\n\nInclude error handling and demonstrate each operation with practical examples.",
+                "category": "Standard Library",
+                "description": "File system operations using Python standard library",
+                "tags": "python,file-system,os,shutil,csv,json,backup"
             },
             
-            "LangChain RAG with ChromaDB": {
-                "content": "Build a Retrieval-Augmented Generation system using LangChain and ChromaDB with the free Gemini API:\n1. Load documents using LangChain document loaders (PDF, TXT, DOCX)\n2. Implement text chunking with RecursiveCharacterTextSplitter\n3. Create embeddings using free embedding models (sentence-transformers)\n4. Store vectors in ChromaDB with metadata\n5. Implement similarity search with MMR diversity\n6. Generate responses using the free Gemini API (gemini-1.5-flash-latest) with retrieved context\n7. Add conversation memory for follow-up questions\n8. Include evaluation metrics and performance monitoring\n\nProvide complete implementation with example documents and queries that can be run directly in the AI Model Evaluator app.",
-                "category": "LangChain",
-                "description": "RAG system with LangChain and ChromaDB using Gemini API",
-                "tags": "langchain,rag,chromadb,embeddings,retrieval,memory,gemini"
+            "Text Processing and Analysis": {
+                "content": "Build a text processing toolkit using Python standard library:\n1. Read and parse text files with different encodings\n2. Implement text cleaning and normalization\n3. Count words, characters, and lines using collections.Counter\n4. Find and replace text patterns with re (regex)\n5. Extract text statistics (word frequency, sentence length)\n6. Implement simple text search and filtering\n7. Handle different text formats (plain text, structured)\n8. Create a simple text analysis report generator\n\nInclude examples with sample text files and demonstrate text analysis capabilities.",
+                "category": "Standard Library",
+                "description": "Text processing and analysis using Python standard library",
+                "tags": "python,text-processing,regex,collections,statistics,analysis"
             },
             
-            "LangChain Chain Composition": {
-                "content": "Create a complex LangChain chain that combines multiple components using the free Gemini API:\n1. LLMChain for basic text generation using Gemini\n2. SequentialChain for multi-step processing\n3. RouterChain for dynamic tool selection\n4. TransformChain for data preprocessing\n5. Custom chain for business logic\n6. Include error handling and fallback strategies\n7. Add monitoring and logging\n8. Implement chain validation and testing\n\nUse the free Gemini API (gemini-1.5-flash-latest) as the LLM. Demonstrate with a practical use case like content analysis and recommendation that can be run directly in the AI Model Evaluator app.",
-                "category": "LangChain",
-                "description": "Complex LangChain chain composition using Gemini API",
-                "tags": "langchain,chain,composition,router,transform,monitoring,gemini"
+            "Data Structures and Algorithms": {
+                "content": "Implement common data structures and algorithms using Python standard library:\n1. Create custom data structures (Stack, Queue, LinkedList)\n2. Implement sorting algorithms (bubble, merge, quick sort)\n3. Build search algorithms (linear, binary, depth-first, breadth-first)\n4. Use built-in data structures (list, dict, set, tuple) effectively\n5. Implement graph algorithms with adjacency lists\n6. Create tree data structures and traversal methods\n7. Add algorithm performance analysis and timing\n8. Include practical examples and use cases\n\nDemonstrate each data structure and algorithm with clear examples and performance comparisons.",
+                "category": "Standard Library",
+                "description": "Data structures and algorithms implementation",
+                "tags": "python,data-structures,algorithms,sorting,searching,graphs,trees"
             },
             
-            # Pandas Library Examples
-            "Pandas Data Analysis Pipeline": {
-                "content": "Create a comprehensive data analysis pipeline using pandas:\n1. Load data from multiple sources (CSV, Excel, JSON, SQL)\n2. Perform exploratory data analysis (EDA) with pandas profiling\n3. Handle missing values using various strategies (drop, fill, interpolate)\n4. Implement data cleaning (duplicates, outliers, data types)\n5. Create feature engineering functions (date features, aggregations)\n6. Perform statistical analysis and hypothesis testing\n7. Generate visualizations with pandas plotting\n8. Export results to multiple formats\n\nInclude sample datasets and demonstrate each step with real examples.",
-                "category": "Pandas",
-                "description": "Complete pandas data analysis and processing pipeline",
-                "tags": "pandas,data-analysis,eda,cleaning,feature-engineering,visualization"
+            "Date and Time Operations": {
+                "content": "Create a comprehensive date and time utility using Python standard library:\n1. Parse and format dates with datetime module\n2. Calculate time differences and durations\n3. Work with timezones using datetime and zoneinfo\n4. Generate date ranges and sequences\n5. Implement calendar operations and date arithmetic\n6. Handle different date formats and locales\n7. Create date-based filtering and sorting\n8. Build a simple event scheduler\n\nInclude examples for common date/time operations and demonstrate timezone handling.",
+                "category": "Standard Library",
+                "description": "Date and time operations using Python standard library",
+                "tags": "python,datetime,timezone,calendar,scheduling,formatting"
             },
             
-            "Pandas Performance Optimization": {
-                "content": "Optimize pandas operations for large datasets:\n1. Use vectorized operations instead of loops\n2. Implement efficient data types (categorical, datetime)\n3. Apply chunking for memory management\n4. Use pandas query() for complex filtering\n5. Implement parallel processing with multiprocessing\n6. Optimize groupby operations with agg() and transform()\n7. Use pandas eval() for complex expressions\n8. Profile performance with memory_usage() and timeit\n\nDemonstrate performance improvements with benchmarks and memory profiling.",
-                "category": "Pandas",
-                "description": "Pandas performance optimization for large datasets",
-                "tags": "pandas,optimization,vectorization,memory,performance,benchmarking"
+            "HTTP and Web Requests": {
+                "content": "Build a web utility toolkit using Python standard library:\n1. Make HTTP requests with urllib.request\n2. Parse URLs and handle URL encoding/decoding\n3. Work with HTTP headers and status codes\n4. Download files and handle redirects\n5. Implement simple web scraping with urllib and html.parser\n6. Create a basic HTTP client with error handling\n7. Handle different content types (JSON, XML, HTML)\n8. Build a simple web API client\n\nInclude examples for common web operations and demonstrate robust error handling.",
+                "category": "Standard Library",
+                "description": "HTTP and web operations using Python standard library",
+                "tags": "python,http,urllib,web-scraping,api-client,parsing"
             },
             
-            "Pandas Time Series Analysis": {
-                "content": "Build a time series analysis system using pandas:\n1. Load and preprocess time series data with proper datetime indexing\n2. Implement resampling operations (daily, weekly, monthly aggregations)\n3. Calculate rolling statistics (mean, std, min, max)\n4. Perform seasonal decomposition and trend analysis\n5. Implement lag features and time-based feature engineering\n6. Handle timezone conversions and daylight saving time\n7. Create time-based visualizations and plots\n8. Export time series data with proper formatting\n\nInclude examples with financial, weather, or IoT sensor data.",
-                "category": "Pandas",
-                "description": "Time series analysis and processing with pandas",
-                "tags": "pandas,time-series,resampling,rolling,seasonal,visualization"
+            "Database Operations (SQLite)": {
+                "content": "Create a database management system using Python standard library (sqlite3):\n1. Create and manage SQLite databases\n2. Implement CRUD operations (Create, Read, Update, Delete)\n3. Handle database connections and transactions\n4. Create tables with proper schema design\n5. Implement data validation and constraints\n6. Add database backup and restore functionality\n7. Create simple queries and data analysis\n8. Build a basic ORM-like interface\n\nInclude examples for common database operations and demonstrate data management capabilities.",
+                "category": "Standard Library",
+                "description": "Database operations using Python sqlite3 module",
+                "tags": "python,sqlite,database,crud,transactions,orm"
             },
             
-            # NumPy Library Examples
-            "NumPy Linear Algebra Operations": {
-                "content": "Implement comprehensive linear algebra operations using NumPy:\n1. Matrix operations (multiplication, inverse, determinant, eigenvalues)\n2. Solve linear systems using numpy.linalg.solve()\n3. Perform Singular Value Decomposition (SVD)\n4. Implement Principal Component Analysis (PCA)\n5. Calculate correlation matrices and covariance\n6. Perform matrix factorizations (LU, QR, Cholesky)\n7. Implement custom linear algebra functions\n8. Optimize operations for large matrices\n\nInclude mathematical explanations and practical applications.",
-                "category": "NumPy",
-                "description": "Advanced linear algebra operations with NumPy",
-                "tags": "numpy,linear-algebra,matrix,svd,pca,factorization,optimization"
+            "Configuration and Settings Management": {
+                "content": "Build a configuration management system using Python standard library:\n1. Read and write configuration files (INI, JSON, YAML-like)\n2. Implement environment variable handling with os.environ\n3. Create configuration validation and defaults\n4. Handle different configuration formats and sources\n5. Implement configuration inheritance and overrides\n6. Add configuration encryption and security\n7. Create configuration backup and versioning\n8. Build a simple settings manager class\n\nInclude examples for different configuration scenarios and demonstrate best practices.",
+                "category": "Standard Library",
+                "description": "Configuration management using Python standard library",
+                "tags": "python,configuration,settings,environment-variables,validation"
             },
             
-            "NumPy Signal Processing": {
-                "content": "Create a signal processing toolkit using NumPy:\n1. Generate synthetic signals (sine, square, sawtooth waves)\n2. Implement Fast Fourier Transform (FFT) and inverse FFT\n3. Apply digital filters (low-pass, high-pass, band-pass)\n4. Perform convolution and correlation operations\n5. Implement window functions (Hamming, Hanning, Blackman)\n6. Add noise and perform noise reduction\n7. Analyze signal frequency content\n8. Create signal visualization and analysis tools\n\nInclude examples with audio, image, and sensor signal processing.",
-                "category": "NumPy",
-                "description": "Signal processing and analysis with NumPy",
-                "tags": "numpy,signal-processing,fft,filters,convolution,noise,visualization"
+            "Logging and Debugging": {
+                "content": "Create a comprehensive logging system using Python standard library:\n1. Set up logging with different levels (DEBUG, INFO, WARNING, ERROR)\n2. Configure log handlers (file, console, rotating files)\n3. Implement custom log formatters and filters\n4. Add structured logging with context information\n5. Create log rotation and archival\n6. Implement debug utilities and traceback handling\n7. Add performance logging and timing\n8. Build a simple debugging toolkit\n\nInclude examples for different logging scenarios and demonstrate debugging capabilities.",
+                "category": "Standard Library",
+                "description": "Logging and debugging using Python standard library",
+                "tags": "python,logging,debugging,traceback,performance,handlers"
             },
             
-            "NumPy Statistical Computing": {
-                "content": "Build a statistical computing framework using NumPy:\n1. Generate random numbers from various distributions\n2. Calculate descriptive statistics (mean, median, std, percentiles)\n3. Implement hypothesis testing (t-test, chi-square, ANOVA)\n4. Perform Monte Carlo simulations\n5. Calculate confidence intervals and p-values\n6. Implement regression analysis and correlation\n7. Create statistical visualization functions\n8. Add statistical validation and testing\n\nInclude examples with real-world datasets and statistical analysis.",
-                "category": "NumPy",
-                "description": "Statistical computing and analysis with NumPy",
-                "tags": "numpy,statistics,distributions,hypothesis-testing,monte-carlo,regression"
+            "Multithreading and Concurrency": {
+                "content": "Implement concurrent programming using Python standard library:\n1. Create and manage threads with threading module\n2. Implement thread synchronization (locks, semaphores)\n3. Use ThreadPoolExecutor for parallel execution\n4. Handle thread communication and data sharing\n5. Implement producer-consumer patterns\n6. Add thread safety and race condition prevention\n7. Create simple parallel processing utilities\n8. Build a basic task scheduler\n\nInclude examples for common concurrency patterns and demonstrate thread safety.",
+                "category": "Standard Library",
+                "description": "Multithreading and concurrency using Python standard library",
+                "tags": "python,threading,concurrency,synchronization,parallel-processing"
             },
             
-            # BeautifulSoup (bs4) Library Examples
-            "BeautifulSoup Web Scraping": {
-                "content": "Create a comprehensive web scraping system using BeautifulSoup:\n1. Parse HTML and XML documents with different parsers\n2. Navigate DOM tree using tags, classes, and IDs\n3. Extract text, links, images, and structured data\n4. Handle dynamic content and JavaScript-rendered pages\n5. Implement robust error handling and retry logic\n6. Add rate limiting and respect robots.txt\n7. Store scraped data in structured formats (CSV, JSON, SQL)\n8. Create reusable scraping functions and classes\n\nInclude examples for e-commerce, news, and social media scraping.",
-                "category": "BeautifulSoup",
-                "description": "Web scraping and HTML parsing with BeautifulSoup",
-                "tags": "beautifulsoup,web-scraping,html-parsing,dom-navigation,data-extraction"
+            "Regular Expressions and Pattern Matching": {
+                "content": "Build a pattern matching toolkit using Python standard library (re module):\n1. Create and test regular expressions\n2. Implement pattern matching and searching\n3. Handle different regex flags and options\n4. Use regex groups and capturing\n5. Implement text validation and cleaning\n6. Create regex-based text parsing\n7. Add performance optimization for regex\n8. Build a simple regex testing utility\n\nInclude examples for common regex patterns and demonstrate text processing capabilities.",
+                "category": "Standard Library",
+                "description": "Regular expressions and pattern matching using Python re module",
+                "tags": "python,regex,pattern-matching,text-processing,validation"
             },
             
-            "BeautifulSoup Data Extraction": {
-                "content": "Build a data extraction pipeline using BeautifulSoup:\n1. Extract tables and convert to pandas DataFrames\n2. Parse forms and extract form data\n3. Extract metadata (title, description, keywords)\n4. Handle nested structures and complex selectors\n5. Implement data cleaning and validation\n6. Add support for different character encodings\n7. Create data transformation functions\n8. Export data to multiple formats\n\nDemonstrate with real websites and complex data structures.",
-                "category": "BeautifulSoup",
-                "description": "Structured data extraction and parsing with BeautifulSoup",
-                "tags": "beautifulsoup,data-extraction,tables,forms,metadata,cleaning"
+            "Collections and Itertools": {
+                "content": "Create advanced data processing using Python standard library collections and itertools:\n1. Use collections.Counter for frequency counting\n2. Implement defaultdict for automatic key creation\n3. Use namedtuple for structured data\n4. Create custom iterators with itertools\n5. Implement data grouping and aggregation\n6. Use itertools for combinations and permutations\n7. Add data streaming and lazy evaluation\n8. Build a simple data processing pipeline\n\nInclude examples for common data processing tasks and demonstrate collection utilities.",
+                "category": "Standard Library",
+                "description": "Advanced data processing using collections and itertools",
+                "tags": "python,collections,itertools,data-processing,aggregation"
             },
             
-            # Scikit-learn Library Examples
-            "Scikit-learn Classification Pipeline": {
-                "content": "Build a complete classification pipeline using scikit-learn:\n1. Load and preprocess data with sklearn.preprocessing\n2. Implement feature selection and dimensionality reduction\n3. Train multiple classifiers (Random Forest, SVM, Logistic Regression)\n4. Perform cross-validation and hyperparameter tuning\n5. Evaluate models with multiple metrics (accuracy, precision, recall, F1)\n6. Create confusion matrices and classification reports\n7. Implement ensemble methods (Voting, Bagging, Boosting)\n8. Add model persistence and deployment preparation\n\nInclude comprehensive evaluation and comparison of different algorithms.",
-                "category": "Scikit-learn",
-                "description": "Complete classification pipeline with scikit-learn",
-                "tags": "scikit-learn,classification,preprocessing,feature-selection,ensemble,evaluation"
+            "Math and Statistics": {
+                "content": "Build a mathematical computing toolkit using Python standard library:\n1. Use math module for mathematical functions\n2. Implement statistical calculations with statistics module\n3. Create random number generation with random module\n4. Add mathematical constants and precision handling\n5. Implement basic statistical analysis\n6. Create mathematical utilities and helpers\n7. Add number formatting and conversion\n8. Build a simple calculator with advanced functions\n\nInclude examples for common mathematical operations and demonstrate statistical analysis.",
+                "category": "Standard Library",
+                "description": "Mathematical computing using Python standard library",
+                "tags": "python,math,statistics,random,calculations,analysis"
             },
             
-            "Scikit-learn Clustering Analysis": {
-                "content": "Implement clustering analysis using scikit-learn:\n1. Perform K-means clustering with optimal k selection\n2. Implement hierarchical clustering and dendrograms\n3. Apply DBSCAN for density-based clustering\n4. Use Gaussian Mixture Models (GMM)\n5. Evaluate clustering quality with silhouette scores\n6. Visualize clusters in 2D and 3D space\n7. Handle high-dimensional data with dimensionality reduction\n8. Create clustering validation and comparison tools\n\nInclude examples with customer segmentation and data exploration.",
-                "category": "Scikit-learn",
-                "description": "Clustering analysis and visualization with scikit-learn",
-                "tags": "scikit-learn,clustering,kmeans,hierarchical,dbscan,gmm,visualization"
+            "System and Process Management": {
+                "content": "Create a system management utility using Python standard library:\n1. Get system information with platform and os modules\n2. Manage processes with subprocess module\n3. Handle file permissions and ownership\n4. Implement system monitoring and resource usage\n5. Create process communication and piping\n6. Add system command execution and automation\n7. Implement basic system administration tasks\n8. Build a simple system information dashboard\n\nInclude examples for common system operations and demonstrate process management.",
+                "category": "Standard Library",
+                "description": "System and process management using Python standard library",
+                "tags": "python,system,process,platform,subprocess,monitoring"
             },
             
-            # TensorFlow/Keras Library Examples
-            "TensorFlow Neural Network": {
-                "content": "Build a custom neural network using TensorFlow/Keras:\n1. Create custom layers and models using Keras API\n2. Implement different architectures (MLP, CNN, RNN, LSTM)\n3. Add regularization techniques (Dropout, BatchNorm, L1/L2)\n4. Implement custom loss functions and metrics\n5. Use callbacks for model monitoring and early stopping\n6. Add TensorBoard integration for experiment tracking\n7. Implement model checkpointing and restoration\n8. Create data generators and augmentation pipelines\n\nInclude examples for image classification, text processing, and time series.",
-                "category": "TensorFlow",
-                "description": "Custom neural network implementation with TensorFlow/Keras",
-                "tags": "tensorflow,keras,neural-network,custom-layers,regularization,callbacks"
+            "Data Serialization and Persistence": {
+                "content": "Build a data persistence system using Python standard library:\n1. Use pickle for object serialization\n2. Implement JSON data handling\n3. Work with XML using xml.etree.ElementTree\n4. Create custom serialization formats\n5. Add data compression with gzip and zlib\n6. Implement data validation and schema checking\n7. Create data migration and versioning\n8. Build a simple object storage system\n\nInclude examples for different data formats and demonstrate persistence capabilities.",
+                "category": "Standard Library",
+                "description": "Data serialization and persistence using Python standard library",
+                "tags": "python,serialization,pickle,json,xml,compression,persistence"
             },
             
-            "TensorFlow Transfer Learning": {
-                "content": "Implement transfer learning using TensorFlow/Keras:\n1. Load pre-trained models (ResNet, VGG, BERT, GPT)\n2. Fine-tune models for specific tasks\n3. Implement feature extraction and classification heads\n4. Add data augmentation and preprocessing\n5. Use learning rate scheduling and optimization\n6. Implement model evaluation and testing\n7. Add model interpretation and visualization\n8. Create deployment-ready models (SavedModel, TFLite)\n\nInclude examples for computer vision and NLP transfer learning.",
-                "category": "TensorFlow",
-                "description": "Transfer learning and model adaptation with TensorFlow",
-                "tags": "tensorflow,transfer-learning,pretrained-models,fine-tuning,deployment"
+            "Network Programming": {
+                "content": "Create network utilities using Python standard library:\n1. Implement socket programming for TCP/UDP\n2. Create simple client-server applications\n3. Handle network connections and data transfer\n4. Implement basic network protocols\n5. Add network error handling and timeouts\n6. Create network monitoring utilities\n7. Implement simple network services\n8. Build a basic network testing toolkit\n\nInclude examples for common network operations and demonstrate client-server communication.",
+                "category": "Standard Library",
+                "description": "Network programming using Python standard library",
+                "tags": "python,networking,sockets,tcp,udp,client-server"
             },
             
-            # Selenium Library Examples
-            "Selenium Web Automation": {
-                "content": "Create a web automation framework using Selenium:\n1. Set up WebDriver for different browsers (Chrome, Firefox, Edge)\n2. Implement page object model (POM) design pattern\n3. Handle dynamic elements and wait strategies\n4. Perform form filling and submission\n5. Implement screenshot and video recording\n6. Add parallel test execution\n7. Handle authentication and session management\n8. Create reusable automation functions and classes\n\nInclude examples for e-commerce testing and web scraping automation.",
-                "category": "Selenium",
-                "description": "Web automation and testing with Selenium",
-                "tags": "selenium,web-automation,webdriver,pom,wait-strategies,parallel-testing"
+            "Email and Messaging": {
+                "content": "Build an email utility using Python standard library:\n1. Send emails with smtplib module\n2. Parse and read emails with email module\n3. Handle email attachments and MIME types\n4. Implement email validation and formatting\n5. Create email templates and automation\n6. Add email filtering and processing\n7. Implement simple email client functionality\n8. Build an email notification system\n\nInclude examples for common email operations and demonstrate email automation.",
+                "category": "Standard Library",
+                "description": "Email and messaging using Python standard library",
+                "tags": "python,email,smtp,mime,validation,automation"
             },
             
-            # FastAPI Library Examples
-            "FastAPI REST API": {
-                "content": "Build a production-ready REST API using FastAPI:\n1. Create API endpoints with proper HTTP methods\n2. Implement request/response models with Pydantic\n3. Add authentication and authorization (JWT, OAuth)\n4. Implement database integration (SQLAlchemy, async)\n5. Add input validation and error handling\n6. Implement rate limiting and caching\n7. Add API documentation with automatic OpenAPI generation\n8. Create testing framework with pytest\n\nInclude examples for user management, data processing, and external integrations.",
-                "category": "FastAPI",
-                "description": "Production REST API with FastAPI and Pydantic",
-                "tags": "fastapi,rest-api,pydantic,authentication,database,testing"
+            "Compression and Archiving": {
+                "content": "Create compression utilities using Python standard library:\n1. Compress and decompress files with gzip\n2. Work with ZIP archives using zipfile\n3. Implement tar archive handling\n4. Add compression algorithms comparison\n5. Create archive extraction and creation\n6. Handle different compression formats\n7. Implement file backup with compression\n8. Build a simple archiving utility\n\nInclude examples for different compression formats and demonstrate archiving capabilities.",
+                "category": "Standard Library",
+                "description": "Compression and archiving using Python standard library",
+                "tags": "python,compression,gzip,zipfile,tar,archiving"
             },
             
-            # OpenCV Library Examples
-            "OpenCV Image Processing": {
-                "content": "Create an image processing pipeline using OpenCV:\n1. Load and save images in various formats\n2. Implement basic operations (resize, crop, rotate, flip)\n3. Apply filters and transformations (blur, sharpen, edge detection)\n4. Perform color space conversions and histogram analysis\n5. Implement object detection and recognition\n6. Add face detection and recognition capabilities\n7. Create video processing and analysis\n8. Implement real-time image processing\n\nInclude examples for computer vision applications and image analysis.",
-                "category": "OpenCV",
-                "description": "Image and video processing with OpenCV",
-                "tags": "opencv,image-processing,computer-vision,object-detection,face-recognition"
+            "Cryptography and Security": {
+                "content": "Build security utilities using Python standard library:\n1. Generate secure random numbers with secrets module\n2. Implement basic hashing with hashlib\n3. Create password hashing and verification\n4. Add basic encryption and decryption\n5. Implement secure token generation\n6. Handle secure file operations\n7. Create basic security utilities\n8. Build a simple password manager\n\nInclude examples for common security operations and demonstrate cryptographic capabilities.",
+                "category": "Standard Library",
+                "description": "Cryptography and security using Python standard library",
+                "tags": "python,cryptography,security,hashing,encryption,secrets"
             },
             
-            # LangGraph Library Examples
-            "LangGraph Simple Agent": {
-                "content": "Build a simple agent using LangGraph with the free Gemini API:\n1. Define agent state and configuration\n2. Create nodes for different agent actions (thinking, tool use, response)\n3. Implement conditional edges for agent decision making\n4. Add memory and conversation history\n5. Handle tool selection and execution\n6. Implement error handling and fallback strategies\n7. Add monitoring and logging capabilities\n8. Create a simple chat interface\n\nUse the free Gemini API (gemini-1.5-flash-latest) as the LLM. Demonstrate with a practical use case like a task planning agent or a simple assistant that can be run directly in the AI Model Evaluator app.",
-                "category": "LangGraph",
-                "description": "Simple agent implementation with LangGraph using Gemini API",
-                "tags": "langgraph,agent,state-management,nodes,edges,memory,gemini"
+            "Testing and Quality Assurance": {
+                "content": "Create a testing framework using Python standard library:\n1. Write unit tests with unittest module\n2. Implement test fixtures and setup/teardown\n3. Create test suites and test discovery\n4. Add assertion methods and test helpers\n5. Implement mock objects and test doubles\n6. Create test reporting and coverage\n7. Add performance testing utilities\n8. Build a simple test runner\n\nInclude examples for different testing scenarios and demonstrate testing best practices.",
+                "category": "Standard Library",
+                "description": "Testing and quality assurance using Python standard library",
+                "tags": "python,testing,unittest,mocking,coverage,quality"
             },
             
-            "LangGraph Multi-Agent System": {
-                "content": "Create a multi-agent system using LangGraph with the free Gemini API:\n1. Design agent roles and responsibilities\n2. Implement inter-agent communication protocols\n3. Create shared state management and coordination\n4. Add agent discovery and registration mechanisms\n5. Implement task delegation and routing\n6. Handle agent conflicts and consensus building\n7. Add monitoring and performance tracking\n8. Create a unified interface for multi-agent interactions\n\nUse the free Gemini API (gemini-1.5-flash-latest) as the LLM for all agents. Demonstrate with a practical use case like a customer service system with specialized agents (billing, technical support, sales) that can be run directly in the AI Model Evaluator app.",
-                "category": "LangGraph",
-                "description": "Multi-agent system orchestration with LangGraph using Gemini API",
-                "tags": "langgraph,multi-agent,communication,coordination,delegation,consensus,gemini"
+            "Command Line Interface": {
+                "content": "Build a command-line interface using Python standard library:\n1. Parse command line arguments with argparse\n2. Create interactive command-line applications\n3. Handle user input and validation\n4. Implement command help and documentation\n5. Add command history and completion\n6. Create subcommands and command groups\n7. Implement configuration file handling\n8. Build a simple CLI framework\n\nInclude examples for common CLI patterns and demonstrate user interface design.",
+                "category": "Standard Library",
+                "description": "Command-line interface using Python standard library",
+                "tags": "python,cli,argparse,interactive,commands,interface"
             },
             
-            # RAG Libraries Examples
-            "LlamaIndex RAG with ChromaDB": {
-                "content": "Build a RAG system using LlamaIndex and ChromaDB with the free Gemini API:\n1. Load documents using LlamaIndex document loaders\n2. Implement document chunking and preprocessing\n3. Create embeddings using free embedding models (sentence-transformers)\n4. Store vectors in ChromaDB with metadata\n5. Implement similarity search and retrieval\n6. Add query processing and response generation using the free Gemini API (gemini-1.5-flash-latest)\n7. Implement conversation memory and context management\n8. Add evaluation metrics and performance monitoring\n\nInclude examples with different document types (PDF, web pages, structured data) and demonstrate query answering capabilities that can be run directly in the AI Model Evaluator app.",
-                "category": "RAG",
-                "description": "RAG system with LlamaIndex and ChromaDB using Gemini API",
-                "tags": "llamaindex,chromadb,rag,embeddings,retrieval,conversation,gemini"
+            "Data Validation and Sanitization": {
+                "content": "Create a data validation system using Python standard library:\n1. Implement input validation and sanitization\n2. Create data type checking and conversion\n3. Add format validation (email, phone, date)\n4. Implement data cleaning and normalization\n5. Create validation rules and constraints\n6. Add error reporting and feedback\n7. Implement data transformation utilities\n8. Build a simple validation framework\n\nInclude examples for common validation scenarios and demonstrate data quality assurance.",
+                "category": "Standard Library",
+                "description": "Data validation and sanitization using Python standard library",
+                "tags": "python,validation,sanitization,data-quality,constraints"
             },
             
-            "LlamaIndex RAG with Qdrant": {
-                "content": "Build a RAG system using LlamaIndex and Qdrant with the free Gemini API:\n1. Set up Qdrant vector database with proper configuration\n2. Load and process documents with LlamaIndex\n3. Create embeddings using free embedding models (sentence-transformers) and store in Qdrant collections\n4. Implement advanced search strategies (filtering, scoring)\n5. Add hybrid search combining dense and sparse retrievers\n6. Implement query expansion and refinement\n7. Add result ranking and re-ranking\n8. Create a production-ready API interface using the free Gemini API (gemini-1.5-flash-latest) for response generation\n\nDemonstrate with large-scale document collections and complex query scenarios that can be run directly in the AI Model Evaluator app.",
-                "category": "RAG",
-                "description": "RAG system with LlamaIndex and Qdrant using Gemini API",
-                "tags": "llamaindex,qdrant,rag,hybrid-search,ranking,api,gemini"
+            "Error Handling and Exception Management": {
+                "content": "Build a robust error handling system using Python standard library:\n1. Implement custom exception classes\n2. Create exception hierarchies and inheritance\n3. Add context managers for resource management\n4. Implement error recovery and fallback strategies\n5. Create error logging and reporting\n6. Add exception chaining and re-raising\n7. Implement error handling patterns\n8. Build a simple error management framework\n\nInclude examples for common error scenarios and demonstrate robust error handling.",
+                "category": "Standard Library",
+                "description": "Error handling and exception management using Python standard library",
+                "tags": "python,exceptions,error-handling,context-managers,recovery"
             },
             
-            # MCP (Model Context Protocol) Examples
-            "MCP Server for File System": {
-                "content": "Build an MCP (Model Context Protocol) server for file system access that integrates with the free Gemini API:\n1. Implement MCP server protocol and message handling\n2. Create file system operations (read, write, list, search)\n3. Add file metadata and content analysis capabilities using the free Gemini API (gemini-1.5-flash-latest)\n4. Implement file watching and change notifications\n5. Add security and access control mechanisms\n6. Handle large files and streaming operations\n7. Implement caching and performance optimization\n8. Create comprehensive error handling and logging\n\nInclude examples for common file operations and demonstrate integration with the free Gemini API that can be run directly in the AI Model Evaluator app.",
-                "category": "MCP",
-                "description": "MCP server for file system operations with Gemini API",
-                "tags": "mcp,file-system,protocol,operations,security,caching,gemini"
-            },
-            
-            "MCP Server for Google Functions": {
-                "content": "Build an MCP server for Google Cloud Functions that integrates with the free Gemini API:\n1. Implement MCP server for Google Cloud integration\n2. Create function deployment and management operations\n3. Add function invocation and monitoring capabilities\n4. Implement environment variable and configuration management\n5. Add logging and error tracking integration\n6. Handle authentication and authorization\n7. Implement cost monitoring and optimization using the free Gemini API (gemini-1.5-flash-latest) for analysis\n8. Create deployment pipelines and CI/CD integration\n\nDemonstrate with practical use cases like automated function deployment and monitoring that can be run directly in the AI Model Evaluator app.",
-                "category": "MCP",
-                "description": "MCP server for Google Cloud Functions with Gemini API",
-                "tags": "mcp,google-cloud,functions,deployment,monitoring,ci-cd,gemini"
-            },
-            
-            "Agent with MCP File System": {
-                "content": "Build an AI agent that uses an MCP server for file system access with the free Gemini API:\n1. Create an agent that connects to the file system MCP server\n2. Implement file reading, writing, and analysis capabilities using the free Gemini API (gemini-1.5-flash-latest)\n3. Add document processing and content extraction\n4. Implement file organization and management tasks\n5. Add search and filtering capabilities\n6. Handle file format conversion and processing\n7. Implement backup and synchronization features\n8. Create a user-friendly interface for file operations\n\nDemonstrate with practical use cases like document analysis, file organization, and automated file processing that can be run directly in the AI Model Evaluator app.",
-                "category": "MCP",
-                "description": "AI agent using MCP server for file operations with Gemini API",
-                "tags": "mcp,agent,file-operations,document-processing,automation,gemini"
-            },
-            
-            "Agent with MCP Google Functions": {
-                "content": "Build an AI agent that uses an MCP server for Google Cloud Functions with the free Gemini API:\n1. Create an agent that connects to the Google Functions MCP server\n2. Implement function deployment and management automation using the free Gemini API (gemini-1.5-flash-latest)\n3. Add monitoring and alerting capabilities\n4. Implement cost optimization and resource management\n5. Add function testing and validation\n6. Handle environment configuration and secrets management\n7. Implement automated scaling and performance tuning\n8. Create deployment workflows and rollback mechanisms\n\nDemonstrate with practical use cases like automated function deployment, monitoring, and optimization that can be run directly in the AI Model Evaluator app.",
-                "category": "MCP",
-                "description": "AI agent using MCP server for Google Functions with Gemini API",
-                "tags": "mcp,agent,google-functions,automation,monitoring,optimization,gemini"
+            "Performance Monitoring and Profiling": {
+                "content": "Create performance monitoring utilities using Python standard library:\n1. Use time module for timing operations\n2. Implement performance profiling with cProfile\n3. Create memory usage monitoring\n4. Add execution time analysis\n5. Implement performance benchmarking\n6. Create performance reporting and visualization\n7. Add resource usage tracking\n8. Build a simple performance monitoring toolkit\n\nInclude examples for performance analysis and demonstrate optimization techniques.",
+                "category": "Standard Library",
+                "description": "Performance monitoring and profiling using Python standard library",
+                "tags": "python,performance,profiling,monitoring,benchmarking,optimization"
             }
         }
 

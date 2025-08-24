@@ -99,9 +99,10 @@ The AI Model Evaluator now includes a comprehensive prompt management system wit
 
 The system comes with pre-built system prompts for:
 
+- **Code Producer (Default)**: Fast code production with minimal explanation but good documentation
+- **Python Development Expert**: Practical Python development guidance for production applications
 - **Code Review Agent**: Expert code review with quality analysis
 - **Debugging Assistant**: Step-by-step debugging guidance
-- **Python Development Expert**: Practical Python development guidance for production applications
 - **Documentation Writer**: Technical documentation creation
 - **Security Expert**: Security analysis and vulnerability assessment
 - **Performance Optimizer**: Performance optimization strategies
@@ -225,12 +226,12 @@ The automated test script:
 The script dynamically fetches all available Gemini models that support content generation using `genai.list_models()`. This ensures you always have access to the latest models without needing to update the code.
 
 Common models include:
-- gemini-1.5-pro-latest
-- gemini-1.5-flash-latest
+- gemini-2.5-flash (default)
+- gemini-2.5-flash-lite
 - gemini-2.0-flash
 - gemini-2.0-flash-lite
-- gemini-2.5-flash
-- gemini-2.5-flash-lite
+- gemini-1.5-pro-latest
+- gemini-1.5-flash-latest
 
 ### Test Prompt
 
@@ -242,7 +243,7 @@ The script tests with this prompt:
 From the latest test:
 - **Success Rate**: 5/6 models (83%)
 - **Fastest**: gemini-1.5-flash-latest (5.58s)
-- **Most Comprehensive**: gemini-2.5-flash (1278 words)
+- **Most Comprehensive**: gemini-2.5-flash (1278 words) - **Default Model**
 - **Best Code Quality**: All successful models scored well
 
 ## 🎮 Interactive Testing with Streamlit
@@ -261,10 +262,31 @@ streamlit run streamlit_app.py
 4. The app will open automatically in your browser
 
 **VS Code Launch Configurations:**
+
+The project includes a comprehensive `.vscode/launch.json` file with multiple debugging and testing configurations:
+
+#### **🚀 Streamlit App Launch Options:**
 - **Launch Streamlit App**: Standard launch with debugging
 - **Launch Streamlit App (External)**: Uses streamlit module directly
-- **Run Automated Tests**: Execute the automated test script
 - **Debug Streamlit App**: Full debugging with breakpoints
+
+#### **🧪 Testing Options:**
+- **Run Automated Tests**: Execute the automated test script
+- **Test Prompt Manager**: Test prompt database functionality
+- **Quick Test**: Run basic functionality tests
+
+#### **🐛 Debugging Options:**
+- **Debug Code Executor**: Debug code execution functionality
+- **Debug Variable Inspection**: Test variable capture features
+
+#### **⚡ Compound Configurations:**
+- **Launch App + Tests**: Run both Streamlit app and automated tests simultaneously
+
+**To use these configurations:**
+1. Open the project in VS Code
+2. Press `F5` or go to Run → Start Debugging
+3. Select your desired configuration from the dropdown
+4. The app will launch with full debugging capabilities
 
 ### Features
 
@@ -312,29 +334,45 @@ The AI Model Evaluator now includes a powerful code execution feature that allow
 - **Error Capture**: All stdout, stderr, and exceptions are captured
 - **Resource Management**: Automatic cleanup of temporary files
 
+#### Debug Features:
+
+- **Syntax Checking**: Validate Python code syntax before execution
+- **Dry Run Analysis**: Identify potential issues without execution
+- **Variable Inspection**: Capture and inspect all variables after execution
+  - View variable types, values, and sizes
+  - Interactive variable selection and detailed inspection
+  - Support for complex data structures (lists, dicts, objects)
+  - Real-time variable capture during code execution
+
 ### System Prompt Suggestions
 
 The app includes default system prompts for development scenarios:
 
-1. **Code Review Agent**:
+1. **Code Producer (Default)**:
    ```
-   You are an expert code reviewer. Provide detailed feedback on code quality, 
-   best practices, security, and performance. Always suggest improvements.
-   ```
-
-2. **Debugging Assistant**:
-   ```
-   You are a debugging expert. Help identify and fix issues in code. 
-   Provide step-by-step solutions and explain the root causes.
+   You are a code producer focused on delivering working solutions quickly. 
+   Provide clean, functional code with minimal explanation but good documentation.
    ```
 
-3. **Python Development Expert**:
+2. **Python Development Expert**:
    ```
    You are a Python development expert. Provide practical, production-ready solutions 
    for Python applications. Focus on modern Python best practices, clean code, and real-world implementation.
    ```
 
-4. **Documentation Writer**:
+3. **Code Review Agent**:
+   ```
+   You are an expert code reviewer. Provide detailed feedback on code quality, 
+   best practices, security, and performance. Always suggest improvements.
+   ```
+
+4. **Debugging Assistant**:
+   ```
+   You are a debugging expert. Help identify and fix issues in code. 
+   Provide step-by-step solutions and explain the root causes.
+   ```
+
+5. **Documentation Writer**:
    ```
    You are a technical writer. Create clear, comprehensive documentation 
    for code, APIs, and systems. Include examples and best practices.
@@ -349,6 +387,41 @@ Each response is scored on:
 - ✅ **Error Handling**: Includes try/catch blocks
 - ✅ **Documentation**: Well-documented code
 - ✅ **Length**: Comprehensive response
+
+## 🔍 Variable Inspection Feature
+
+The debug section now includes advanced variable inspection capabilities that allow you to:
+
+### **Variable Capture**
+- Automatically capture all user-defined variables after code execution
+- Filter out system variables and imported modules
+- Support for all Python data types (int, float, str, bool, list, dict, tuple, etc.)
+
+### **Interactive Inspection Interface**
+- **Overview Tab**: See all variables with their types and sizes at a glance
+- **Details Tab**: Select individual variables for detailed inspection
+- **Raw Data Tab**: View complete variable data in JSON format
+
+### **Variable Information Displayed**
+- **Type**: Python data type (str, int, list, dict, etc.)
+- **Value**: Current value of the variable
+- **Size**: Length for collections, shape for arrays, or N/A for scalars
+- **Formatted Display**: Type-specific formatting for better readability
+
+### **Usage Example**
+1. Write or paste Python code in the debug section
+2. Click "🔍 Inspect Variables" button
+3. View execution results and captured variables
+4. Use the tabs to explore variable details:
+   - **Overview**: Quick summary of all variables
+   - **Details**: Select and inspect individual variables
+   - **Raw Data**: Complete variable data in JSON format
+
+### **Supported Data Types**
+- **Primitive Types**: int, float, str, bool
+- **Collections**: list, tuple, dict, set
+- **Objects**: Custom objects with string representation
+- **Special Types**: numpy arrays, pandas DataFrames (with shape info)
 
 
 

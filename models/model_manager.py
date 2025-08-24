@@ -122,12 +122,12 @@ class ModelManager:
             st.error(f"Error fetching models: {str(e)}")
             # Fallback to common models if API call fails
             fallback_models = [
-                "gemini-1.5-pro-latest",
-                "gemini-1.5-flash-latest", 
-                "gemini-2.0-flash",
-                "gemini-2.0-flash-lite",
-                "gemini-2.5-flash",
-                "gemini-2.5-flash-lite"
+                "models/gemini-1.5-pro-latest",
+                "models/gemini-1.5-flash-latest", 
+                "models/gemini-2.0-flash",
+                "models/gemini-2.0-flash-lite",
+                "models/gemini-2.5-flash",
+                "models/gemini-2.5-flash-lite"
             ]
             self._available_models = fallback_models
             self._last_model_fetch = current_time

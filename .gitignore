@@ -187,3 +187,6 @@ logs/
 # Test results and reports
 gemini_test_results_*.json
 gemini_evaluation_report_*.md
+
+# Temporary files with special characters
+*treamlit_app*

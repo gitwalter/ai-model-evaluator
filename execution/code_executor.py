@@ -14,6 +14,7 @@ from io import StringIO
 import contextlib
 import ast
 import re
+import json
 from typing import Dict, Any, List
 
 
@@ -112,6 +113,198 @@ class CodeExecutor:
         cleaned_code = '\n'.join(lines)
         
         return [cleaned_code]
+    
+    def execute_python_code_with_variables(self, code: str) -> Dict[str, Any]:
+        """Execute Python code and capture variables for inspection."""
+        result = {
+            'success': False,
+            'output': '',
+            'error': '',
+            'execution_time': 0,
+            'variables': {},
+            'variable_types': {},
+            'variable_sizes': {},
+            'missing_libraries': [],
+            'library_suggestions': [],
+            'alternative_solutions': []
+        }
+        
+        start_time = time.time()
+        
+        # First, analyze the code for imports
+        import_analysis = self._analyze_imports(code)
+        result['missing_libraries'] = import_analysis['missing']
+        result['library_suggestions'] = import_analysis['suggestions']
+        result['alternative_solutions'] = import_analysis['alternatives']
+        
+        # If there are missing libraries, provide helpful information
+        if import_analysis['missing']:
+            result['error'] = self._format_missing_library_error(import_analysis)
+            result['execution_time'] = time.time() - start_time
+            return result
+        
+        try:
+            # Create a modified version of the code that captures variables
+            modified_code = self._add_variable_capture(code)
+            
+            # Create a temporary file for the modified code
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+                temp_file.write(modified_code)
+                temp_file_path = temp_file.name
+            
+            # Capture stdout and stderr
+            output_buffer = StringIO()
+            error_buffer = StringIO()
+            
+            with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(error_buffer):
+                # Execute the code with timeout
+                process = subprocess.run(
+                    [sys.executable, temp_file_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=self.timeout
+                )
+            
+            # Clean up temporary file
+            import os
+            os.unlink(temp_file_path)
+            
+            result['execution_time'] = time.time() - start_time
+            
+            if process.returncode == 0:
+                result['success'] = True
+                result['output'] = output_buffer.getvalue() + process.stdout
+                
+                # Extract variables from the output
+                variables_data = self._extract_variables_from_output(result['output'])
+                result['variables'] = variables_data.get('variables', {})
+                result['variable_types'] = variables_data.get('types', {})
+                result['variable_sizes'] = variables_data.get('sizes', {})
+            else:
+                error_output = error_buffer.getvalue() + process.stderr
+                result['error'] = error_output
+                
+                # Check if the error is due to missing libraries
+                missing_libs = self._extract_missing_libraries_from_error(error_output)
+                if missing_libs:
+                    result['missing_libraries'] = missing_libs
+                    result['library_suggestions'] = self._get_library_suggestions(missing_libs)
+                    result['alternative_solutions'] = self._get_alternative_solutions(missing_libs)
+        
+        except subprocess.TimeoutExpired:
+            result['error'] = f"Code execution timed out after {self.timeout} seconds"
+            result['execution_time'] = self.timeout
+        except Exception as e:
+            result['error'] = f"Execution error: {str(e)}"
+            result['execution_time'] = time.time() - start_time
+        
+        return result
+    
+    def _add_variable_capture(self, code: str) -> str:
+        """Add variable capture code to the original code."""
+        capture_code = '''
+import json
+import sys
+import traceback
+from io import StringIO
+
+# Capture original stdout
+original_stdout = sys.stdout
+captured_output = StringIO()
+sys.stdout = captured_output
+
+try:
+    # Execute the user code
+    exec(compile("""{user_code}""", '<string>', 'exec'), globals(), locals())
+    
+    # Capture variables
+    variables = {{}}
+    variable_types = {{}}
+    variable_sizes = {{}}
+    
+    # Get all variables in locals (excluding built-ins and special variables)
+    # Create a copy of locals to avoid modification during iteration
+    local_vars = dict(locals())
+    excluded_vars = {{'captured_output', 'original_stdout', 'variables', 'variable_types', 'variable_sizes', 'local_vars', 'excluded_vars', 'StringIO'}}
+    
+    for var_name, var_value in local_vars.items():
+        # Skip built-ins, special variables, and imported modules
+        if (not var_name.startswith('_') and 
+            var_name not in excluded_vars and
+            not hasattr(var_value, '__file__') and  # Skip imported modules
+            not str(type(var_value)).startswith("<class 'module'>")):
+            try:
+                # Store variable value (convert to string representation for complex objects)
+                if hasattr(var_value, '__dict__'):
+                    # For objects, try to get a string representation
+                    variables[var_name] = str(var_value)
+                else:
+                    variables[var_name] = var_value
+                
+                # Store variable type
+                variable_types[var_name] = str(type(var_value).__name__)
+                
+                # Store variable size information
+                if hasattr(var_value, '__len__'):
+                    try:
+                        variable_sizes[var_name] = len(var_value)
+                    except:
+                        variable_sizes[var_name] = 'N/A'
+                elif hasattr(var_value, 'shape'):  # For numpy arrays
+                    variable_sizes[var_name] = str(var_value.shape)
+                else:
+                    variable_sizes[var_name] = 'N/A'
+                    
+            except Exception as e:
+                variables[var_name] = f"<Error capturing: {{str(e)}}>"
+                variable_types[var_name] = "Error"
+                variable_sizes[var_name] = "N/A"
+    
+    # Output the captured variables as JSON
+    print("\\n=== VARIABLE_CAPTURE_START ===")
+    print(json.dumps({{
+        "variables": variables,
+        "types": variable_types,
+        "sizes": variable_sizes
+    }}, default=str))
+    print("=== VARIABLE_CAPTURE_END ===")
+    
+except Exception as e:
+    print(f"Error during execution: {{str(e)}}")
+    traceback.print_exc()
+
+finally:
+    # Restore original stdout and print captured output
+    sys.stdout = original_stdout
+    print(captured_output.getvalue())
+'''
+        
+        # Escape the user code for the exec statement
+        escaped_code = code.replace('"', '\\"').replace('\n', '\\n')
+        return capture_code.format(user_code=escaped_code)
+    
+    def _extract_variables_from_output(self, output: str) -> Dict[str, Any]:
+        """Extract variable data from the execution output."""
+        try:
+            # Find the variable capture section
+            start_marker = "=== VARIABLE_CAPTURE_START ==="
+            end_marker = "=== VARIABLE_CAPTURE_END ==="
+            
+            start_idx = output.find(start_marker)
+            end_idx = output.find(end_marker)
+            
+            if start_idx != -1 and end_idx != -1:
+                # Extract the JSON data
+                json_start = start_idx + len(start_marker)
+                json_data = output[json_start:end_idx].strip()
+                
+                # Parse the JSON
+                variables_data = json.loads(json_data)
+                return variables_data
+            else:
+                return {"variables": {}, "types": {}, "sizes": {}}
+        except Exception as e:
+            return {"variables": {}, "types": {}, "sizes": {}}
     
     def execute_python_code(self, code: str) -> Dict[str, Any]:
         """Execute Python code safely and return results with enhanced library management."""

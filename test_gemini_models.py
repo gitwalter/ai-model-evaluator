@@ -17,10 +17,10 @@ import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
-api_key = os.getenv("API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    raise ValueError("API_KEY not found in environment variables")
+    raise ValueError("GEMINI_API_KEY not found in environment variables")
 
 # Configure Gemini
 genai.configure(api_key=api_key)
@@ -40,12 +40,12 @@ def get_available_models():
         print(f"Error fetching models: {str(e)}")
         # Fallback to common models if API call fails
         return [
-            "gemini-1.5-pro-latest",
-            "gemini-1.5-flash-latest", 
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite",
             "gemini-2.0-flash",
             "gemini-2.0-flash-lite",
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite"
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-flash-latest"
         ]
 
 # Get models to test dynamically

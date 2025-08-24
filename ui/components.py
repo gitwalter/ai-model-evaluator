@@ -316,7 +316,7 @@ class UIComponents:
         )
         
         # Debug actions
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
         
         with col1:
             syntax_check = st.button("🔍 Check Syntax", key=f"syntax_{language}", use_container_width=True)
@@ -327,6 +327,9 @@ class UIComponents:
         with col3:
             debug_exec = st.button("🐛 Debug Execute", key=f"debug_exec_{language}", use_container_width=True)
         
+        with col4:
+            inspect_vars = st.button("🔍 Inspect Variables", key=f"inspect_{language}", use_container_width=True)
+        
         # Handle debug actions
         if syntax_check:
             UIComponents._simple_syntax_check(debug_code)
@@ -336,6 +339,201 @@ class UIComponents:
         
         if debug_exec:
             UIComponents._simple_debug_execute(debug_code, code_executor)
+        
+        if inspect_vars:
+            UIComponents._debug_execute_with_variables(debug_code, code_executor)
+    
+    @staticmethod
+    def _debug_execute_with_variables(code: str, code_executor) -> None:
+        """Debug execution with variable inspection capabilities."""
+        st.subheader("🔍 Debug Execution with Variable Inspection")
+        
+        with st.spinner("Executing code with variable capture..."):
+            execution_result = code_executor.execute_python_code_with_variables(code)
+        
+        if execution_result['success']:
+            st.success("✅ Code executed successfully!")
+            
+            # Display execution metrics
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Execution Time", f"{execution_result['execution_time']:.3f}s")
+            with col2:
+                st.metric("Variables Captured", len(execution_result['variables']))
+            
+            # Display output
+            if execution_result['output'].strip():
+                # Remove variable capture markers from display
+                clean_output = execution_result['output']
+                start_marker = "=== VARIABLE_CAPTURE_START ==="
+                end_marker = "=== VARIABLE_CAPTURE_END ==="
+                
+                start_idx = clean_output.find(start_marker)
+                end_idx = clean_output.find(end_marker)
+                
+                if start_idx != -1 and end_idx != -1:
+                    clean_output = clean_output[:start_idx] + clean_output[end_idx + len(end_marker):]
+                
+                if clean_output.strip():
+                    st.write("**📤 Output:**")
+                    st.text_area(
+                        "Execution Output",
+                        value=clean_output.strip(),
+                        height=200,
+                        disabled=True
+                    )
+            
+            # Display variable inspection
+            if execution_result['variables']:
+                st.write("**🔍 Variable Inspection:**")
+                
+                # Create tabs for different views
+                tab1, tab2, tab3 = st.tabs(["📊 Overview", "📋 Details", "🔍 Raw Data"])
+                
+                with tab1:
+                    UIComponents._display_variable_overview(execution_result)
+                
+                with tab2:
+                    UIComponents._display_variable_details(execution_result)
+                
+                with tab3:
+                    UIComponents._display_variable_raw_data(execution_result)
+            else:
+                st.info("ℹ️ No variables were captured during execution")
+        else:
+            st.error("❌ Code execution failed!")
+            
+            # Check if it's a missing library error
+            if execution_result.get('missing_libraries'):
+                UIComponents._display_library_management_info(execution_result)
+            else:
+                # Enhanced error display
+                st.write("**🚨 Error Details:**")
+                st.text_area(
+                    "Error Output",
+                    value=execution_result['error'],
+                    height=200,
+                    disabled=True
+                )
+                
+                # Error analysis
+                error_text = execution_result['error'].lower()
+                if 'nameerror' in error_text:
+                    st.info("💡 **Suggestion:** Check if all variables are defined before use")
+                elif 'typeerror' in error_text:
+                    st.info("💡 **Suggestion:** Check data types and function arguments")
+                elif 'indexerror' in error_text:
+                    st.info("💡 **Suggestion:** Check list/array indices")
+                elif 'keyerror' in error_text:
+                    st.info("💡 **Suggestion:** Check dictionary keys")
+                elif 'attributeerror' in error_text:
+                    st.info("💡 **Suggestion:** Check object attributes and methods")
+                elif 'importerror' in error_text or 'modulenotfounderror' in error_text:
+                    st.info("💡 **Suggestion:** Check if required modules are installed")
+                else:
+                    st.info("💡 **Suggestion:** Review the code logic and check for common programming mistakes")
+    
+    @staticmethod
+    def _display_variable_overview(execution_result: dict) -> None:
+        """Display an overview of captured variables."""
+        variables = execution_result['variables']
+        variable_types = execution_result['variable_types']
+        variable_sizes = execution_result['variable_sizes']
+        
+        # Count variables by type
+        type_counts = {}
+        for var_type in variable_types.values():
+            type_counts[var_type] = type_counts.get(var_type, 0) + 1
+        
+        # Display type distribution
+        st.write("**📊 Variable Type Distribution:**")
+        for var_type, count in type_counts.items():
+            st.write(f"- {var_type}: {count} variables")
+        
+        # Display variables with their types and sizes
+        st.write("**📋 Variable Summary:**")
+        
+        # Create a DataFrame-like display
+        for var_name in sorted(variables.keys()):
+            var_type = variable_types.get(var_name, 'Unknown')
+            var_size = variable_sizes.get(var_name, 'N/A')
+            
+            col1, col2, col3 = st.columns([2, 1, 1])
+            with col1:
+                st.write(f"**{var_name}**")
+            with col2:
+                st.write(f"`{var_type}`")
+            with col3:
+                st.write(f"Size: {var_size}")
+    
+    @staticmethod
+    def _display_variable_details(execution_result: dict) -> None:
+        """Display detailed information about each variable."""
+        variables = execution_result['variables']
+        variable_types = execution_result['variable_types']
+        variable_sizes = execution_result['variable_sizes']
+        
+        # Allow user to select a variable to inspect
+        if variables:
+            selected_var = st.selectbox(
+                "Select variable to inspect:",
+                options=sorted(variables.keys()),
+                key="variable_inspector"
+            )
+            
+            if selected_var:
+                st.write(f"**🔍 Inspecting: `{selected_var}`**")
+                
+                # Variable type
+                var_type = variable_types.get(selected_var, 'Unknown')
+                st.write(f"**Type:** `{var_type}`")
+                
+                # Variable size
+                var_size = variable_sizes.get(selected_var, 'N/A')
+                st.write(f"**Size:** {var_size}")
+                
+                # Variable value
+                var_value = variables[selected_var]
+                st.write("**Value:**")
+                
+                # Display value based on type
+                if var_type in ['str', 'string']:
+                    st.text_area(
+                        "String Value",
+                        value=str(var_value),
+                        height=150,
+                        disabled=True
+                    )
+                elif var_type in ['list', 'tuple']:
+                    st.write(f"```python\n{var_value}\n```")
+                elif var_type in ['dict']:
+                    st.write(f"```python\n{var_value}\n```")
+                elif var_type in ['int', 'float']:
+                    st.metric("Numeric Value", var_value)
+                else:
+                    # For other types, show as text
+                    st.text_area(
+                        "Object Value",
+                        value=str(var_value),
+                        height=200,
+                        disabled=True
+                    )
+        else:
+            st.info("No variables available for inspection")
+    
+    @staticmethod
+    def _display_variable_raw_data(execution_result: dict) -> None:
+        """Display raw variable data in JSON format."""
+        st.write("**🔍 Raw Variable Data:**")
+        
+        # Create a clean data structure for display
+        raw_data = {
+            "variables": execution_result['variables'],
+            "types": execution_result['variable_types'],
+            "sizes": execution_result['variable_sizes']
+        }
+        
+        st.json(raw_data)
     
     @staticmethod
     def _simple_syntax_check(code: str) -> None:

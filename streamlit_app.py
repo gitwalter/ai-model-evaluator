@@ -112,19 +112,43 @@ class AIModelEvaluatorApp:
         if test_mode == "Single Model":
             col1, col2 = st.columns([3, 1])
             with col1:
+                # Set default model to models/gemini-2.5-flash if available, otherwise use first available
+                default_model_index = 0
+                if "models/gemini-2.5-flash" in available_models:
+                    default_model_index = available_models.index("models/gemini-2.5-flash")
+                    st.sidebar.success(f"✅ Default model set to: models/gemini-2.5-flash")
+                else:
+                    st.sidebar.info(f"ℹ️ models/gemini-2.5-flash not available, using: {available_models[0] if available_models else 'None'}")
+                
                 selected_models = [st.selectbox(
                     "Select Model",
                     available_models,
-                    help="Choose the Gemini model to test"
+                    index=default_model_index,
+                    help="Choose the Gemini model to test (models/gemini-2.5-flash is recommended)"
                 )]
             with col2:
-                if st.button("🔄", help="Refresh model list"):
+                if st.button("🔄", help="Refresh model list and clear cache"):
+                    # Clear cached models to force refresh
+                    self.model_manager._available_models = None
+                    self.model_manager._last_model_fetch = 0
                     st.rerun()
         else:
             # Multi-model selection
             # Initialize session state for selected models
+            if "selected_models" not in st.session_state:
+                st.session_state.selected_models = []
+                
             if not st.session_state.selected_models:
-                st.session_state.selected_models = available_models[:3] if len(available_models) >= 3 else available_models
+                # Prioritize models/gemini-2.5-flash as first model if available
+                default_models = []
+                if "models/gemini-2.5-flash" in available_models:
+                    default_models.append("models/gemini-2.5-flash")
+                
+                # Add other models up to 3 total
+                remaining_models = [m for m in available_models if m != "models/gemini-2.5-flash"]
+                default_models.extend(remaining_models[:3 - len(default_models)])
+                
+                st.session_state.selected_models = default_models
             
             selected_models = st.multiselect(
                 "Select Models",
@@ -194,6 +218,12 @@ class AIModelEvaluatorApp:
                     # Clear the API key from session state
                     if "api_key" in st.session_state:
                         del st.session_state.api_key
+                    st.rerun()
+                
+                if st.button("🧹 Clear Session State", help="Clear all session state and refresh"):
+                    # Clear all session state
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
                     st.rerun()
         else:
             st.sidebar.warning("⚠️ API Key not configured")
@@ -342,6 +372,10 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
     
     def render_results_section(self):
         """Render the results section with tabs."""
+        # Initialize session state if not exists
+        if "test_results" not in st.session_state:
+            st.session_state.test_results = []
+        
         if not st.session_state.test_results:
             return
         
@@ -411,6 +445,10 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
     
     def render_comparison_tab(self):
         """Render the comparison tab."""
+        # Initialize session state if not exists
+        if "test_results" not in st.session_state:
+            st.session_state.test_results = []
+            
         if len(st.session_state.test_results) > 1:
             st.header("📈 Model Comparison")
             
@@ -536,6 +574,10 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
     
     def render_export_section(self):
         """Render the export section."""
+        # Initialize session state if not exists
+        if "test_results" not in st.session_state:
+            st.session_state.test_results = []
+            
         self.ui_components.display_export_section(st.session_state.test_results)
         
         if st.session_state.test_results and st.sidebar.button("🗑️ Clear Results"):

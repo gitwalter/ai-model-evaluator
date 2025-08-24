@@ -161,16 +161,18 @@ class PromptManagerUtils:
             system_prompt_dict["None"] = ""
             
             # System prompt selection with default
-            # Set "Python Development Expert" as default if available
+            # Set "Code Producer (Default)" as default if available, fallback to "Python Development Expert"
             default_index = 0
-            if "Python Development Expert" in system_prompt_dict:
+            if "Code Producer (Default)" in system_prompt_dict:
+                default_index = list(system_prompt_dict.keys()).index("Code Producer (Default)")
+            elif "Python Development Expert" in system_prompt_dict:
                 default_index = list(system_prompt_dict.keys()).index("Python Development Expert")
             
             selected_system_prompt_name = st.sidebar.selectbox(
                 "Select System Prompt",
                 list(system_prompt_dict.keys()),
                 index=default_index,
-                help="Choose a system prompt or select 'None'. Python Development Expert is set as default."
+                help="Choose a system prompt or select 'None'. Code Producer (Default) is set as default for faster responses."
             )
             
             system_prompt = system_prompt_dict[selected_system_prompt_name]
