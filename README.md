@@ -1,6 +1,6 @@
 # AI Model Evaluator
 
-A comprehensive testing and evaluation framework for AI models, starting with Google's Gemini API and expanding to include LangChain agents and other LLMs. Features automated testing, manual testing via Streamlit, and detailed evaluation reports.
+A comprehensive testing and evaluation framework for Google's Gemini API. Features automated testing, manual testing via Streamlit, and detailed evaluation reports with code execution capabilities.
 
 ## 🚀 Features
 
@@ -16,7 +16,6 @@ A comprehensive testing and evaluation framework for AI models, starting with Go
 - **🔧 Dual Prompt Support**: Use both system prompts and test prompt examples simultaneously
 - **📊 Visual Analytics**: Enhanced response visualization with charts and metrics
 - **🚀 Code Execution**: Execute AI-generated Python code directly in the UI with real-time results
-- **Future-Ready**: Designed for expansion to LangChain agents and other LLMs
 
 ## 📁 Project Structure
 
@@ -400,14 +399,6 @@ Each response is scored on:
    - Check if port 8501 is available
    - Verify API key is set correctly
 
-## 📊 Why Base Environment?
-
-This project uses the base Anaconda environment instead of virtual environments because:
-- ✅ No SSL DLL conflicts
-- ✅ All required packages work correctly
-- ✅ Simpler setup and maintenance
-- ✅ Consistent behavior across different systems
-
 ## 📄 Output Files
 
 ### JSON Results
@@ -445,32 +436,6 @@ This project is for educational and testing purposes.
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
-
-## 🗺️ Roadmap
-
-### Phase 1: Gemini Model Evaluation ✅
-- [x] Automated testing framework
-- [x] Interactive Streamlit app
-- [x] Dynamic model discovery
-- [x] Comprehensive evaluation reports
-
-### Phase 2: LangChain Agent Development 🚧
-- [ ] LangChain integration
-- [ ] Agent evaluation framework
-- [ ] Tool and chain testing
-- [ ] Agent comparison metrics
-
-### Phase 3: Multi-Model Comparison 📋
-- [ ] Support for other LLMs (OpenAI, Anthropic, etc.)
-- [ ] Cross-model performance analysis
-- [ ] Cost and efficiency metrics
-- [ ] Model recommendation system
-
-### Phase 4: Advanced Agent Evaluation 🔬
-- [ ] Agent workflow testing
-- [ ] Memory and context evaluation
-- [ ] Tool usage analysis
-- [ ] Agent reliability metrics
 
 ## 📞 Support
 
