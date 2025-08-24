@@ -382,6 +382,50 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
         # Use all current test results (they're already filtered for this test session)
         latest_results = st.session_state.test_results
         
+        # Show quick summary for multiple models
+        if len(latest_results) > 1:
+            st.subheader("📋 Quick Summary")
+            
+            # Create a compact summary table
+            summary_data = []
+            for result in latest_results:
+                if result["status"] == "success":
+                    analysis = self.evaluator.analyze_response(result["response"])
+                    overall_score = self.evaluator.calculate_overall_score(analysis)
+                    
+                    summary_data.append({
+                        "Model": result["model_name"],
+                        "Status": "✅ Success",
+                        "Time": f"{result.get('response_time', 0):.2f}s",
+                        "Score": f"{overall_score:.2f}",
+                        "Words": analysis["response_length"]["details"]
+                    })
+                else:
+                    summary_data.append({
+                        "Model": result["model_name"],
+                        "Status": "❌ Failed",
+                        "Time": f"{result.get('response_time', 0):.2f}s",
+                        "Score": "N/A",
+                        "Words": "N/A"
+                    })
+            
+            # Display summary in columns for better space usage
+            if len(summary_data) <= 8:
+                # Show in a single row for few models
+                cols = st.columns(len(summary_data))
+                for i, (data, col) in enumerate(zip(summary_data, cols)):
+                    with col:
+                        st.metric(
+                            data["Model"].split('/')[-1],  # Show just the model name part
+                            data["Status"],
+                            f"{data['Score']} | {data['Time']}"
+                        )
+            else:
+                # Show in a table for many models
+                st.dataframe(summary_data, use_container_width=True)
+            
+            st.divider()
+        
         # Create tabs for better organization
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["🤖 Model Response", "📊 Evaluation", "📈 Comparison", "🚀 Code Execution", "📝 Prompt Manager"])
         
@@ -415,15 +459,61 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
             # Multiple results display
             st.header(f"Responses from {len(latest_results)} Models")
             
-            # Create tabs for each model response
-            model_tabs = st.tabs([f"🤖 {result['model_name']}" for result in latest_results])
-            
-            for i, (result, tab) in enumerate(zip(latest_results, model_tabs)):
-                with tab:
-                    if result["status"] == "success":
-                        self.ui_components.display_single_response(result, self.evaluator)
+            # Use selectbox for many models, tabs for few models
+            if len(latest_results) <= 6:
+                # Use tabs for 6 or fewer models
+                model_tabs = st.tabs([f"🤖 {result['model_name']}" for result in latest_results])
+                
+                for i, (result, tab) in enumerate(zip(latest_results, model_tabs)):
+                    with tab:
+                        if result["status"] == "success":
+                            self.ui_components.display_single_response(result, self.evaluator)
+                        else:
+                            st.error(f"Error: {result.get('error', 'Unknown error')}")
+            else:
+                # Use selectbox for more than 6 models
+                model_names = [result['model_name'] for result in latest_results]
+                
+                # Add quick navigation
+                col1, col2, col3 = st.columns([1, 3, 1])
+                with col1:
+                    if st.button("⬅️ Previous", help="Go to previous model"):
+                        # Get current index from session state or default to 0
+                        current_index = st.session_state.get('current_model_index', 0)
+                        new_index = (current_index - 1) % len(model_names)
+                        st.session_state.current_model_index = new_index
+                        st.rerun()
+                
+                with col2:
+                    selected_model_name = st.selectbox(
+                        "Select Model to View:",
+                        model_names,
+                        index=st.session_state.get('current_model_index', 0),
+                        help=f"Select from {len(latest_results)} models"
+                    )
+                    # Update session state when selection changes
+                    st.session_state.current_model_index = model_names.index(selected_model_name)
+                
+                with col3:
+                    if st.button("Next ➡️", help="Go to next model"):
+                        # Get current index from session state or default to 0
+                        current_index = st.session_state.get('current_model_index', 0)
+                        new_index = (current_index + 1) % len(model_names)
+                        st.session_state.current_model_index = new_index
+                        st.rerun()
+                
+                # Find the selected result
+                selected_result = next((result for result in latest_results if result['model_name'] == selected_model_name), None)
+                
+                if selected_result:
+                    if selected_result["status"] == "success":
+                        self.ui_components.display_single_response(selected_result, self.evaluator)
                     else:
-                        st.error(f"Error: {result.get('error', 'Unknown error')}")
+                        st.error(f"Error: {selected_result.get('error', 'Unknown error')}")
+                
+                # Show quick navigation info
+                current_index = model_names.index(selected_model_name)
+                st.info(f"📋 Showing {selected_model_name} ({current_index + 1} of {len(latest_results)})")
     
     def render_evaluation_tab(self, latest_results: List[Dict[str, Any]]):
         """Render the evaluation tab."""
@@ -441,7 +531,68 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
         else:
             # Multiple results evaluation
             st.header("📊 Multi-Model Evaluation")
+            
+            # Show summary comparison table first
+            st.subheader("📋 Summary Comparison")
             self.ui_components.display_comparison_table(latest_results, self.evaluator)
+            
+            # Add detailed individual evaluation option
+            st.subheader("🔍 Detailed Individual Evaluation")
+            
+            # Use selectbox for many models, tabs for few models
+            if len(latest_results) <= 6:
+                # Use tabs for 6 or fewer models
+                eval_tabs = st.tabs([f"📊 {result['model_name']}" for result in latest_results])
+                
+                for i, (result, tab) in enumerate(zip(latest_results, eval_tabs)):
+                    with tab:
+                        if result["status"] == "success":
+                            analysis = self.evaluator.analyze_response(result["response"])
+                            self.ui_components.display_evaluation_dashboard(result, analysis, self.evaluator)
+                        else:
+                            st.error(f"Error: {result.get('error', 'Unknown error')}")
+            else:
+                # Use selectbox for more than 6 models
+                model_names = [result['model_name'] for result in latest_results]
+                
+                # Add quick navigation
+                col1, col2, col3 = st.columns([1, 3, 1])
+                with col1:
+                    if st.button("⬅️ Previous", help="Go to previous model", key="prev_eval"):
+                        current_index = st.session_state.get('current_eval_index', 0)
+                        new_index = (current_index - 1) % len(model_names)
+                        st.session_state.current_eval_index = new_index
+                        st.rerun()
+                
+                with col2:
+                    selected_model_name = st.selectbox(
+                        "Select Model for Detailed Evaluation:",
+                        model_names,
+                        index=st.session_state.get('current_eval_index', 0),
+                        help=f"Select from {len(latest_results)} models"
+                    )
+                    st.session_state.current_eval_index = model_names.index(selected_model_name)
+                
+                with col3:
+                    if st.button("Next ➡️", help="Go to next model", key="next_eval"):
+                        current_index = st.session_state.get('current_eval_index', 0)
+                        new_index = (current_index + 1) % len(model_names)
+                        st.session_state.current_eval_index = new_index
+                        st.rerun()
+                
+                # Find the selected result
+                selected_result = next((result for result in latest_results if result['model_name'] == selected_model_name), None)
+                
+                if selected_result:
+                    if selected_result["status"] == "success":
+                        analysis = self.evaluator.analyze_response(selected_result["response"])
+                        self.ui_components.display_evaluation_dashboard(selected_result, analysis, self.evaluator)
+                    else:
+                        st.error(f"Error: {selected_result.get('error', 'Unknown error')}")
+                
+                # Show quick navigation info
+                current_index = model_names.index(selected_model_name)
+                st.info(f"📋 Showing detailed evaluation for {selected_model_name} ({current_index + 1} of {len(latest_results)})")
     
     def render_comparison_tab(self):
         """Render the comparison tab."""
@@ -452,6 +603,73 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
         if len(st.session_state.test_results) > 1:
             st.header("📈 Model Comparison")
             
+            # Show current test session results first
+            if st.session_state.test_results:
+                st.subheader("📋 Current Test Session Results")
+                
+                # Create comparison table for current session
+                current_comparison_data = []
+                for result in st.session_state.test_results:
+                    if result["status"] == "success":
+                        analysis = self.evaluator.analyze_response(result["response"])
+                        overall_score = self.evaluator.calculate_overall_score(analysis)
+                        
+                        current_comparison_data.append({
+                            "Model": result["model_name"],
+                            "Status": result["status"],
+                            "Time (s)": f"{result.get('response_time', 0):.2f}",
+                            "Words": analysis["response_length"]["details"],
+                            "Overall Score": f"{overall_score:.2f}",
+                            "Code": "✅" if analysis["code_quality"]["score"] > 0 else "❌",
+                            "Exec": "✅" if analysis["execution_attempt"]["score"] > 0 else "❌",
+                            "Summary": "✅" if analysis["content_summary"]["score"] > 0 else "❌",
+                            "Error Handling": "✅" if analysis["error_handling"]["score"] > 0 else "❌",
+                            "Documentation": "✅" if analysis["documentation"]["score"] > 0 else "❌"
+                        })
+                    else:
+                        current_comparison_data.append({
+                            "Model": result["model_name"],
+                            "Status": result["status"],
+                            "Time (s)": f"{result.get('response_time', 0):.2f}",
+                            "Words": "N/A",
+                            "Overall Score": "N/A",
+                            "Code": "❌",
+                            "Exec": "❌",
+                            "Summary": "❌",
+                            "Error Handling": "❌",
+                            "Documentation": "❌"
+                        })
+                
+                if current_comparison_data:
+                    st.dataframe(current_comparison_data, use_container_width=True)
+                    
+                    # Add some visual charts if we have enough data
+                    if len(current_comparison_data) >= 2:
+                        st.subheader("📊 Performance Trends")
+                        
+                        # Extract data for visualization (only successful results)
+                        successful_data = [row for row in current_comparison_data if row["Status"] == "success"]
+                        if len(successful_data) >= 2:
+                            models = [row["Model"] for row in successful_data]
+                            times = [float(row["Time (s)"]) for row in successful_data]
+                            scores = [float(row["Overall Score"]) for row in successful_data]
+                            
+                            # Create a DataFrame for visualization
+                            chart_data = pd.DataFrame({
+                                "Model": models,
+                                "Response Time (s)": times,
+                                "Overall Score": scores
+                            })
+                            
+                            # Response time bar chart
+                            st.bar_chart(chart_data.set_index("Model")["Response Time (s)"])
+                            
+                            # Score comparison line chart
+                            st.line_chart(chart_data.set_index("Model")["Overall Score"])
+            
+            # Historical comparison section
+            st.subheader("📈 Historical Comparison")
+            
             # Filter options
             col1, col2 = st.columns([2, 1])
             with col1:
@@ -461,7 +679,7 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
                 # Filter by status
                 show_only_successful = st.checkbox("Show only successful", value=True, help="Filter out failed tests")
             
-            # Create comparison table
+            # Create comparison table for historical data
             comparison_data = []
             recent_results = st.session_state.test_results[-max_results:]
             
@@ -469,48 +687,40 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
                 if show_only_successful and result["status"] != "success":
                     continue
                     
-                analysis = self.evaluator.analyze_response(result["response"])
-                overall_score = self.evaluator.calculate_overall_score(analysis)
-                
-                comparison_data.append({
-                    "Model": result["model_name"],
-                    "Status": result["status"],
-                    "Time (s)": f"{result.get('response_time', 0):.2f}",
-                    "Words": analysis["response_length"]["details"],
-                    "Overall Score": f"{overall_score:.2f}",
-                    "Code": "✅" if analysis["code_quality"]["score"] > 0 else "❌",
-                    "Exec": "✅" if analysis["execution_attempt"]["score"] > 0 else "❌",
-                    "Summary": "✅" if analysis["content_summary"]["score"] > 0 else "❌",
-                    "Error Handling": "✅" if analysis["error_handling"]["score"] > 0 else "❌",
-                    "Documentation": "✅" if analysis["documentation"]["score"] > 0 else "❌"
-                })
+                if result["status"] == "success":
+                    analysis = self.evaluator.analyze_response(result["response"])
+                    overall_score = self.evaluator.calculate_overall_score(analysis)
+                    
+                    comparison_data.append({
+                        "Model": result["model_name"],
+                        "Status": result["status"],
+                        "Time (s)": f"{result.get('response_time', 0):.2f}",
+                        "Words": analysis["response_length"]["details"],
+                        "Overall Score": f"{overall_score:.2f}",
+                        "Code": "✅" if analysis["code_quality"]["score"] > 0 else "❌",
+                        "Exec": "✅" if analysis["execution_attempt"]["score"] > 0 else "❌",
+                        "Summary": "✅" if analysis["content_summary"]["score"] > 0 else "❌",
+                        "Error Handling": "✅" if analysis["error_handling"]["score"] > 0 else "❌",
+                        "Documentation": "✅" if analysis["documentation"]["score"] > 0 else "❌"
+                    })
+                else:
+                    comparison_data.append({
+                        "Model": result["model_name"],
+                        "Status": result["status"],
+                        "Time (s)": f"{result.get('response_time', 0):.2f}",
+                        "Words": "N/A",
+                        "Overall Score": "N/A",
+                        "Code": "❌",
+                        "Exec": "❌",
+                        "Summary": "❌",
+                        "Error Handling": "❌",
+                        "Documentation": "❌"
+                    })
             
             if comparison_data:
                 st.dataframe(comparison_data, use_container_width=True)
-                
-                # Add some visual charts if we have enough data
-                if len(comparison_data) >= 2:
-                    st.subheader("📊 Performance Trends")
-                    
-                    # Extract data for visualization
-                    models = [row["Model"] for row in comparison_data]
-                    times = [float(row["Time (s)"]) for row in comparison_data]
-                    scores = [float(row["Overall Score"]) for row in comparison_data]
-                    
-                    # Create a DataFrame for visualization
-                    chart_data = pd.DataFrame({
-                        "Model": models,
-                        "Response Time (s)": times,
-                        "Overall Score": scores
-                    })
-                    
-                    # Response time bar chart
-                    st.bar_chart(chart_data.set_index("Model")["Response Time (s)"])
-                    
-                    # Score comparison line chart
-                    st.line_chart(chart_data.set_index("Model")["Overall Score"])
             else:
-                st.info("No results to compare. Run some tests first.")
+                st.info("No historical results to compare. Run some tests first.")
         else:
             st.info("Run multiple tests to see comparison data.")
     
@@ -521,22 +731,68 @@ GEMINI_API_KEY=AIzaSyC_your_actual_api_key_here
             result = latest_results[0]
             if result["status"] == "success":
                 st.header(f"🚀 Code Execution - {result['model_name']}")
-                self.ui_components.display_code_execution(result["response"], self.code_executor)
+                self.ui_components.display_code_execution(result["response"], self.code_executor, result['model_name'])
             else:
                 st.error(f"Error: {result.get('error', 'Unknown error')}")
         else:
             # Multiple results code execution
             st.header(f"🚀 Code Execution - {len(latest_results)} Models")
             
-            # Create tabs for each model's code execution
-            exec_tabs = st.tabs([f"🚀 {result['model_name']}" for result in latest_results])
-            
-            for i, (result, tab) in enumerate(zip(latest_results, exec_tabs)):
-                with tab:
-                    if result["status"] == "success":
-                        self.ui_components.display_code_execution(result["response"], self.code_executor)
+            # Use selectbox for many models, tabs for few models
+            if len(latest_results) <= 6:
+                # Use tabs for 6 or fewer models
+                exec_tabs = st.tabs([f"🚀 {result['model_name']}" for result in latest_results])
+                
+                for i, (result, tab) in enumerate(zip(latest_results, exec_tabs)):
+                    with tab:
+                        if result["status"] == "success":
+                            self.ui_components.display_code_execution(result["response"], self.code_executor, result['model_name'])
+                        else:
+                            st.error(f"Error: {result.get('error', 'Unknown error')}")
+            else:
+                # Use selectbox for more than 6 models
+                model_names = [result['model_name'] for result in latest_results]
+                
+                # Add quick navigation
+                col1, col2, col3 = st.columns([1, 3, 1])
+                with col1:
+                    if st.button("⬅️ Previous", help="Go to previous model", key="prev_code_exec"):
+                        # Get current index from session state or default to 0
+                        current_index = st.session_state.get('current_code_exec_index', 0)
+                        new_index = (current_index - 1) % len(model_names)
+                        st.session_state.current_code_exec_index = new_index
+                        st.rerun()
+                
+                with col2:
+                    selected_model_name = st.selectbox(
+                        "Select Model for Code Execution:",
+                        model_names,
+                        index=st.session_state.get('current_code_exec_index', 0),
+                        help=f"Select from {len(latest_results)} models"
+                    )
+                    # Update session state when selection changes
+                    st.session_state.current_code_exec_index = model_names.index(selected_model_name)
+                
+                with col3:
+                    if st.button("Next ➡️", help="Go to next model", key="next_code_exec"):
+                        # Get current index from session state or default to 0
+                        current_index = st.session_state.get('current_code_exec_index', 0)
+                        new_index = (current_index + 1) % len(model_names)
+                        st.session_state.current_code_exec_index = new_index
+                        st.rerun()
+                
+                # Find the selected result
+                selected_result = next((result for result in latest_results if result['model_name'] == selected_model_name), None)
+                
+                if selected_result:
+                    if selected_result["status"] == "success":
+                        self.ui_components.display_code_execution(selected_result["response"], self.code_executor, selected_result['model_name'])
                     else:
-                        st.error(f"Error: {result.get('error', 'Unknown error')}")
+                        st.error(f"Error: {selected_result.get('error', 'Unknown error')}")
+                
+                # Show quick navigation info
+                current_index = model_names.index(selected_model_name)
+                st.info(f"📋 Showing code execution for {selected_model_name} ({current_index + 1} of {len(latest_results)})")
     
     def render_prompt_manager_tab(self):
         """Render the prompt manager tab."""

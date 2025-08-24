@@ -188,7 +188,7 @@ class UIComponents:
                 st.divider()
     
     @staticmethod
-    def display_code_execution(response_text: str, code_executor) -> None:
+    def display_code_execution(response_text: str, code_executor, unique_id: str = None) -> None:
         """Display enhanced code execution interface with editing and debugging capabilities."""
         st.subheader("🚀 Code Execution & Debugging")
         
@@ -208,13 +208,13 @@ class UIComponents:
             exec_tab, edit_tab, debug_tab = st.tabs(["▶️ Execute", "✏️ Edit & Execute", "🐛 Debug"])
             
             with exec_tab:
-                UIComponents._display_simple_execution(block, code_executor)
+                UIComponents._display_simple_execution(block, code_executor, unique_id)
             
             with edit_tab:
-                UIComponents._display_editable_execution(block, code_executor)
+                UIComponents._display_editable_execution(block, code_executor, unique_id)
             
             with debug_tab:
-                UIComponents._display_debug_execution(block, code_executor)
+                UIComponents._display_debug_execution(block, code_executor, unique_id)
             
             # Show additional blocks info if there are more
             if len(code_blocks) > 1:
@@ -224,26 +224,27 @@ class UIComponents:
         st.divider()
     
     @staticmethod
-    def _display_simple_execution(block: dict, code_executor) -> None:
+    def _display_simple_execution(block: dict, code_executor, unique_id: str = None) -> None:
         """Display simple code execution (original functionality)."""
         language = block['language']
         
         st.write(f"**📝 Original Code ({language.upper()}):**")
         st.code(block['code'], language=block['language'])
         
-        # Simple execution button
-        button_key = f"exec_simple_{language}_{hash(block['code'])}"
+        # Simple execution button with unique key
+        unique_suffix = f"_{unique_id}" if unique_id else ""
+        button_key = f"exec_simple_{language}_{hash(block['code'])}{unique_suffix}"
         
         if st.button(f"▶️ Execute {language.upper()} Code", key=button_key, use_container_width=True):
             if block['language'].lower() in ['python', 'py']:
                 with st.spinner("Executing Python code..."):
                     execution_result = code_executor.execute_python_code(block['code'])
-                    UIComponents._display_execution_results(execution_result)
+                    UIComponents._display_execution_results(execution_result, unique_id)
             else:
                 UIComponents._display_unsupported_language(block['language'])
     
     @staticmethod
-    def _display_editable_execution(block: dict, code_executor) -> None:
+    def _display_editable_execution(block: dict, code_executor, unique_id: str = None) -> None:
         """Display editable code execution interface."""
         language = block['language']
         
@@ -257,17 +258,18 @@ class UIComponents:
             help="Modify the code before execution"
         )
         
-        # Execution options
+        # Execution options with unique keys
+        unique_suffix = f"_{unique_id}" if unique_id else ""
         col1, col2, col3 = st.columns([1, 1, 1])
         
         with col1:
-            execute_edited = st.button("▶️ Execute Edited Code", key=f"exec_edited_{language}", use_container_width=True)
+            execute_edited = st.button("▶️ Execute Edited Code", key=f"exec_edited_{language}{unique_suffix}", use_container_width=True)
         
         with col2:
-            reset_code = st.button("🔄 Reset to Original", key=f"reset_{language}", use_container_width=True)
+            reset_code = st.button("🔄 Reset to Original", key=f"reset_{language}{unique_suffix}", use_container_width=True)
         
         with col3:
-            format_code = st.button("🎨 Format Code", key=f"format_{language}", use_container_width=True)
+            format_code = st.button("🎨 Format Code", key=f"format_{language}{unique_suffix}", use_container_width=True)
         
         # Handle button actions
         if reset_code:
@@ -292,12 +294,12 @@ class UIComponents:
             if block['language'].lower() in ['python', 'py']:
                 with st.spinner("Executing edited Python code..."):
                     execution_result = code_executor.execute_python_code(edited_code)
-                    UIComponents._display_execution_results(execution_result)
+                    UIComponents._display_execution_results(execution_result, unique_id)
             else:
                 UIComponents._display_unsupported_language(block['language'])
     
     @staticmethod
-    def _display_debug_execution(block: dict, code_executor) -> None:
+    def _display_debug_execution(block: dict, code_executor, unique_id: str = None) -> None:
         """Display simplified debugging interface for code execution."""
         language = block['language']
         
@@ -315,20 +317,21 @@ class UIComponents:
             help="Modify the code for debugging"
         )
         
-        # Debug actions
+        # Debug actions with unique keys
+        unique_suffix = f"_{unique_id}" if unique_id else ""
         col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
         
         with col1:
-            syntax_check = st.button("🔍 Check Syntax", key=f"syntax_{language}", use_container_width=True)
+            syntax_check = st.button("🔍 Check Syntax", key=f"syntax_{language}{unique_suffix}", use_container_width=True)
         
         with col2:
-            dry_run = st.button("🚀 Dry Run", key=f"dryrun_{language}", use_container_width=True)
+            dry_run = st.button("🚀 Dry Run", key=f"dryrun_{language}{unique_suffix}", use_container_width=True)
         
         with col3:
-            debug_exec = st.button("🐛 Debug Execute", key=f"debug_exec_{language}", use_container_width=True)
+            debug_exec = st.button("🐛 Debug Execute", key=f"debug_exec_{language}{unique_suffix}", use_container_width=True)
         
         with col4:
-            inspect_vars = st.button("🔍 Inspect Variables", key=f"inspect_{language}", use_container_width=True)
+            inspect_vars = st.button("🔍 Inspect Variables", key=f"inspect_{language}{unique_suffix}", use_container_width=True)
         
         # Handle debug actions
         if syntax_check:
@@ -338,13 +341,13 @@ class UIComponents:
             UIComponents._simple_dry_run(debug_code)
         
         if debug_exec:
-            UIComponents._simple_debug_execute(debug_code, code_executor)
+            UIComponents._simple_debug_execute(debug_code, code_executor, unique_id)
         
         if inspect_vars:
-            UIComponents._debug_execute_with_variables(debug_code, code_executor)
+            UIComponents._debug_execute_with_variables(debug_code, code_executor, unique_id)
     
     @staticmethod
-    def _debug_execute_with_variables(code: str, code_executor) -> None:
+    def _debug_execute_with_variables(code: str, code_executor, unique_id: str = None) -> None:
         """Debug execution with variable inspection capabilities."""
         st.subheader("🔍 Debug Execution with Variable Inspection")
         
@@ -622,7 +625,7 @@ class UIComponents:
             st.success("✅ No obvious issues detected")
     
     @staticmethod
-    def _simple_debug_execute(code: str, code_executor) -> None:
+    def _simple_debug_execute(code: str, code_executor, unique_id: str = None) -> None:
         """Simple debug execution with enhanced error reporting and library management."""
         st.subheader("🐛 Debug Execution")
         
@@ -684,7 +687,7 @@ class UIComponents:
                     st.info("💡 **Suggestion:** Review the code logic and check for common programming mistakes")
     
     @staticmethod
-    def _display_execution_results(execution_result: dict) -> None:
+    def _display_execution_results(execution_result: dict, unique_id: str = None) -> None:
         """Display execution results in a standardized format with library management."""
         st.write("**📋 Execution Results:**")
         
@@ -717,7 +720,7 @@ class UIComponents:
             
             # Check if it's a missing library error
             if execution_result.get('missing_libraries'):
-                UIComponents._display_library_management_info(execution_result)
+                UIComponents._display_library_management_info(execution_result, unique_id)
             else:
                 # Regular error display
                 col1, col2 = st.columns(2)
@@ -739,7 +742,7 @@ class UIComponents:
                 )
     
     @staticmethod
-    def _display_library_management_info(execution_result: dict) -> None:
+    def _display_library_management_info(execution_result: dict, unique_id: str = None) -> None:
         """Display library management information for missing libraries."""
         missing_libs = execution_result.get('missing_libraries', [])
         suggestions = execution_result.get('library_suggestions', [])
@@ -757,8 +760,9 @@ class UIComponents:
             for i, suggestion in enumerate(suggestions, 1):
                 st.code(suggestion, language="bash")
                 
-                # Add copy button functionality
-                if st.button(f"📋 Copy Command {i}", key=f"copy_cmd_{i}"):
+                # Add copy button functionality with unique key
+                unique_suffix = f"_{unique_id}" if unique_id else ""
+                if st.button(f"📋 Copy Command {i}", key=f"copy_cmd_{i}{unique_suffix}"):
                     st.write("✅ Command copied to clipboard!")
         
         # Alternative solutions
@@ -767,24 +771,24 @@ class UIComponents:
             for alternative in alternatives[:5]:  # Limit to 5 alternatives
                 st.info(f"• {alternative}")
         
-        # Quick actions
+        # Quick actions with unique keys
         st.write("**⚡ Quick Actions:**")
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            if st.button("📦 Install All", key="install_all"):
+            if st.button("📦 Install All", key=f"install_all{unique_suffix}"):
                 st.info("💡 Run these commands in your terminal:")
                 for suggestion in suggestions:
                     st.code(suggestion, language="bash")
         
         with col2:
-            if st.button("🔄 Show Alternatives", key="show_alternatives"):
+            if st.button("🔄 Show Alternatives", key=f"show_alternatives{unique_suffix}"):
                 st.write("**Built-in Python Alternatives:**")
                 for alternative in alternatives:
                     st.write(f"• {alternative}")
         
         with col3:
-            if st.button("📚 Library Info", key="library_info"):
+            if st.button("📚 Library Info", key=f"library_info{unique_suffix}"):
                 st.write("**Library Information:**")
                 for lib in missing_libs:
                     clean_lib = lib.split('.')[0]
